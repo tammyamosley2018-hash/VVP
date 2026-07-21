@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Client Intake — Vibrational Virtue™ Practitioner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root {
+    --navy: #0B1B33;
+    --navy-soft: #16294A;
+    --parchment: #FAF6EA;
+    --sand: #F1EBDA;
+    --gold: #C9A227;
+    --gold-bright: #E7C767;
+    --crystal: #3B6EA5;
+    --crystal-pale: #CBDCEC;
+    --ink: #1E2433;
+    --ink-mute: #5B6472;
+    --line: #DAD0B8;
+    --error: #9B3B3B;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  body {
+    margin: 0;
+    background: var(--parchment);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3, .mark-word { font-family: 'Fraunces', serif; }
+
+  a { color: var(--crystal); }
+
+  :focus-visible {
+    outline: 3px solid var(--crystal);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Header ---------- */
+  header.site {
+    background: var(--navy);
+    color: var(--parchment);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .mark { width: 40px; height: 40px; flex: none; }
+  .mark path, .mark polygon { stroke: var(--gold); }
+  .mark .v { fill: var(--gold); }
+  header.site .word {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  header.site .mark-word {
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+  }
+  header.site .mark-word sup { font-size: 0.55em; }
+  header.site .subline {
+    font-size: 0.78rem;
+    color: var(--gold-bright);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ---------- Status screens (loading / error / confirmation) ---------- */
+  .status-screen {
+    max-width: 560px;
+    margin: 15vh auto;
+    padding: 0 24px;
+    text-align: center;
+  }
+  .status-screen h2 { font-size: 1.6rem; margin-bottom: 10px; }
+  .status-screen p { color: var(--ink-mute); }
+  .status-screen .glyph {
+    width: 56px; height: 56px; margin: 0 auto 20px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-family: 'Fraunces', serif;
+    font-size: 1.6rem;
+  }
+  .status-screen.error .glyph { border-color: var(--error); color: var(--error); }
+  .spinner {
+    width: 36px; height: 36px; margin: 0 auto 20px;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  [hidden] { display: none !important; }
+
+  /* ---------- Layout shell ---------- */
+  .shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+    gap: 28px;
+  }
+  @media (min-width: 900px) {
+    .shell { grid-template-columns: 150px 1fr; align-items: start; }
+  }
+
+  .intro {
+    grid-column: 1 / -1;
+    background: var(--navy);
+    color: var(--parchment);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+  }
+  .intro .practitioner-line {
+    color: var(--gold-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.78rem;
+    margin: 0 0 8px;
+  }
+  .intro h1 { font-size: 1.9rem; margin: 0 0 14px; }
+  .intro .scope,
+  .intro .cancellation {
+    font-size: 0.92rem;
+    color: #D9DEE8;
+    border-top: 1px solid rgba(231,199,103,0.25);
+    padding-top: 12px;
+    margin-top: 12px;
+  }
+  .intro strong { color: var(--gold-bright); }
+
+  /* ---------- Progress rail ---------- */
+  .rail {
+    position: sticky;
+    top: 20px;
+    display: none;
+  }
+  @media (min-width: 900px) {
+    .rail { display: block; }
+  }
+  .rail ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    position: relative;
+  }
+  .rail ol::before {
+    content: "";
+    position: absolute;
+    left: 15px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--line);
+  }
+  .rail-fill {
+    position: absolute;
+    left: 15px; top: 6px;
+    width: 2px;
+    background: var(--gold);
+    height: 0%;
+    transition: height 0.5s ease;
+  }
+  .rail li { position: relative; padding: 0 0 26px 40px; }
+  .rail a {
+    text-decoration: none;
+    color: var(--ink-mute);
+    font-size: 0.78rem;
+    display: block;
+    line-height: 1.3;
+  }
+  .node {
+    position: absolute;
+    left: 6px; top: 0;
+    width: 18px; height: 18px;
+    background: var(--parchment);
+    border: 2px solid var(--line);
+    transform: rotate(45deg);
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .rail li.optional .node { border-style: dashed; }
+  .rail li.complete .node { background: var(--gold); border-color: var(--gold); }
+  .rail li.optional.complete .node { background: var(--crystal-pale); border-color: var(--crystal); }
+
+  .coherence-meter {
+    font-size: 0.78rem;
+    color: var(--ink-mute);
+    margin: 0 0 16px 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .coherence-meter strong { color: var(--navy); }
+
+  /* ---------- Mobile progress strip ---------- */
+  .rail-mobile {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 2px 10px;
+    position: sticky;
+    top: 0;
+    background: var(--parchment);
+    z-index: 5;
+  }
+  @media (min-width: 900px) { .rail-mobile { display: none; } }
+  .rail-mobile a {
+    flex: none;
+    width: 12px; height: 12px;
+    border: 2px solid var(--line);
+    transform: rotate(45deg);
+    display: block;
+  }
+  .rail-mobile a.complete { background: var(--gold); border-color: var(--gold); }
+  .rail-mobile a.optional.complete { background: var(--crystal-pale); border-color: var(--crystal); }
+
+  /* ---------- Form sections ---------- */
+  form#intake-form { grid-column: 1 / -1; }
+  @media (min-width: 900px) { form#intake-form { grid-column: 2; } }
+
+  section.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px 26px 30px;
+    margin-bottom: 22px;
+    scroll-margin-top: 20px;
+  }
+  section.card .eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  section.card .eyebrow .num {
+    font-family: 'Fraunces', serif;
+    color: var(--gold);
+    font-size: 1rem;
+  }
+  section.card .eyebrow .tag {
+    margin-left: auto;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--crystal);
+    border: 1px solid var(--crystal-pale);
+    background: var(--crystal-pale);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  section.card h2 { font-size: 1.3rem; margin: 0 0 6px; }
+  section.card .hint { color: var(--ink-mute); font-size: 0.88rem; margin: 0 0 18px; }
+  section.card .note {
+    background: var(--sand);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.88rem;
+    color: var(--ink);
+    margin-bottom: 18px;
+  }
+
+  .grid-2 { display: grid; gap: 16px; }
+  @media (min-width: 620px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .field label .req { color: var(--error); margin-left: 2px; }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="tel"],
+  .field input[type="date"],
+  .field textarea {
+    width: 100%;
+    font: inherit;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--parchment);
+    color: var(--ink);
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--crystal);
+    background: #fff;
+  }
+  .field textarea { min-height: 90px; resize: vertical; }
+
+  fieldset.check-group {
+    border: none;
+    padding: 0;
+    margin: 0 0 16px;
+  }
+  fieldset.check-group legend {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 0 8px;
+  }
+  .check-grid { display: grid; gap: 10px; }
+  @media (min-width: 620px) { .check-grid.cols-2 { grid-template-columns: 1fr 1fr; } }
+
+  .check-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.92rem;
+  }
+  .check-item input { margin-top: 3px; flex: none; width: 18px; height: 18px; accent-color: var(--gold); }
+  .check-item.required-item { background: var(--sand); border-radius: 8px; padding: 10px 12px; }
+
+  .band {
+    background: var(--navy-soft);
+    color: var(--gold-bright);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+  }
+
+  .submit-bar {
+    grid-column: 1 / -1;
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, var(--parchment) 60%, transparent);
+    padding: 18px 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  @media (min-width: 900px) { .submit-bar { grid-column: 2; } }
+  button#submit-btn {
+    font: inherit;
+    font-weight: 600;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  button#submit-btn:hover { background: var(--gold-bright); }
+  button#submit-btn:disabled { background: var(--line); color: var(--ink-mute); cursor: not-allowed; }
+  #submit-error {
+    color: var(--error);
+    font-size: 0.88rem;
+    max-width: 420px;
+  }
+
+  footer.site {
+    text-align: center;
+    color: var(--ink-mute);
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 30px 20px 50px;
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+    <polygon points="24,4 42,40 6,40" fill="none" stroke-width="2"></polygon>
+    <polygon points="24,4 33,40 15,40" fill="none" stroke-width="1"></polygon>
+    <polygon points="24,16 30,40 18,40" class="v" stroke="none"></polygon>
+  </svg>
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Client Intake</span>
+  </div>
+</header>
+
+<div id="loading" class="status-screen">
+  <div class="spinner"></div>
+  <h2>Opening your intake…</h2>
+  <p>Confirming your link before we show the form.</p>
+</div>
+
+<div id="error-screen" class="status-screen error" hidden>
+  <div class="glyph">!</div>
+  <h2 id="error-title">We couldn't open this intake</h2>
+  <p id="error-body">Double-check the link your practitioner sent you, or ask them to send a new one.</p>
+</div>
+
+<div id="confirmation" class="status-screen" hidden>
+  <div class="glyph">✓</div>
+  <h2>Your intake has been received</h2>
+  <p>It's been stored securely and connected to your practitioner. There's nothing else you need to do — they'll follow up with you directly ahead of your session.</p>
+</div>
+
+<main id="app" hidden>
+  <div class="shell">
+
+    <div class="intro">
+      <p class="practitioner-line">Completing this intake for <span id="practitioner-name">your practitioner</span></p>
+      <h1>Part I — Client Intake Packet</h1>
+      <p class="scope"><strong>Scope notice.</strong> VVP is a complementary educational and energetic wellness practice. It is not medical diagnosis, treatment, prescription, disease management, psychotherapy, environmental inspection, legal advice, or emergency service.</p>
+      <p class="cancellation"><strong>Cancellation policy.</strong> Sessions are non-refundable once the scheduled session has begun. You may pause or stop a session at any time; ending it early does not create eligibility for a refund.</p>
+    </div>
+
+    <nav class="rail-mobile" aria-label="Section progress">
+      <a href="#sec-profile" class="dot" data-node></a>
+      <a href="#sec-purpose" class="dot" data-node></a>
+      <a href="#sec-focus" class="dot optional" data-node></a>
+      <a href="#sec-consent" class="dot" data-node></a>
+      <a href="#sec-remote" class="dot optional" data-node></a>
+      <a href="#sec-environmental" class="dot optional" data-node></a>
+      <a href="#sec-touch" class="dot" data-node></a>
+      <a href="#sec-rights" class="dot" data-node></a>
+      <a href="#sec-acknowledgment" class="dot" data-node></a>
+    </nav>
+
+    <nav class="rail" aria-label="Section progress">
+      <p class="coherence-meter">Coherence <strong><span id="coherence-count">0</span>/6</strong> required sections</p>
+      <ol>
+        <span class="rail-fill" id="rail-fill"></span>
+        <li data-node><span class="node"></span><a href="#sec-profile">01 Profile</a></li>
+        <li data-node><span class="node"></span><a href="#sec-purpose">02 Goals</a></li>
+        <li class="optional" data-node><span class="node"></span><a href="#sec-focus">03 Focus</a></li>
+        <li data-node><span class="node"></span><a href="#sec-consent">04 Consent</a></li>
+        <li class="optional" data-node><span class="node"></span><a href="#sec-remote">05 Remote</a></li>
+        <li class="optional" data-node><span class="node"></span><a href="#sec-environmental">06 Environment</a></li>
+        <li data-node><span class="node"></span><a href="#sec-touch">07 Touch</a></li>
+        <li data-node><span class="node"></span><a href="#sec-rights">08 Rights</a></li>
+        <li data-node><span class="node"></span><a href="#sec-acknowledgment">09 Agreement</a></li>
+      </ol>
+    </nav>
+
+    <form id="intake-form" novalidate>
+
+      <section class="card" id="sec-profile">
+        <div class="eyebrow"><span class="num">01</span></div>
+        <h2>Client Intake &amp; Profile</h2>
+        <div class="grid-2">
+          <div class="field">
+            <label for="full_name">Full name<span class="req">*</span></label>
+            <input type="text" id="full_name" name="full_name" required autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="dob_age">Date of birth / age</label>
+            <input type="text" id="dob_age" name="dob_age">
+          </div>
+          <div class="field">
+            <label for="session_date">Session date<span class="req">*</span></label>
+            <input type="date" id="session_date" name="session_date" required>
+          </div>
+          <div class="field">
+            <label for="email">Email<span class="req">*</span></label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone" autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="city_state">City / State</label>
+            <input type="text" id="city_state" name="city_state">
+          </div>
+          <div class="field">
+            <label for="preferred_contact_method">Preferred contact method</label>
+            <input type="text" id="preferred_contact_method" name="preferred_contact_method">
+          </div>
+          <div class="field">
+            <label for="referral_source">Referral / source</label>
+            <input type="text" id="referral_source" name="referral_source">
+          </div>
+          <div class="field">
+            <label for="emergency_contact">Emergency contact</label>
+            <input type="text" id="emergency_contact" name="emergency_contact">
+          </div>
+          <div class="field">
+            <label for="preferred_name_comms">Preferred name / communication preferences</label>
+            <input type="text" id="preferred_name_comms" name="preferred_name_comms">
+          </div>
+        </div>
+
+        <fieldset class="check-group">
+          <legend>Session type</legend>
+          <div class="check-grid cols-2">
+            <label class="check-item"><input type="checkbox" name="session_type" value="new_client"> New client / first session</label>
+            <label class="check-item"><input type="checkbox" name="session_type" value="returning_client"> Returning client</label>
+            <label class="check-item"><input type="checkbox" name="session_type" value="remote_session" id="session_type_remote"> Remote session</label>
+            <label class="check-item"><input type="checkbox" name="session_type" value="in_person_session"> In-person session</label>
+            <label class="check-item"><input type="checkbox" name="session_type" value="follow_up_session"> Follow-up session</label>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="card" id="sec-purpose">
+        <div class="eyebrow"><span class="num">02</span></div>
+        <h2>Session Purpose &amp; Wellness Goals</h2>
+        <div class="field">
+          <label for="support_today">What would you like energetic support around today?<span class="req">*</span></label>
+          <textarea id="support_today" name="support_today" required></textarea>
+        </div>
+        <div class="field">
+          <label for="desired_outcome">What outcome would feel helpful after this session?</label>
+          <textarea id="desired_outcome" name="desired_outcome"></textarea>
+        </div>
+        <fieldset class="check-group">
+          <legend>Session focus requested</legend>
+          <div class="check-grid cols-2">
+            <label class="check-item"><input type="checkbox" name="session_focus" value="general_wellness"> General energetic wellness</label>
+            <label class="check-item"><input type="checkbox" name="session_focus" value="terrain_grounding"> Terrain / grounding / hydration support</label>
+            <label class="check-item"><input type="checkbox" name="session_focus" value="biofield_summary"> Biofield, energy center, or meridian summary</label>
+            <label class="check-item"><input type="checkbox" name="session_focus" value="full_scan"> Full energetic scan</label>
+            <label class="check-item"><input type="checkbox" name="session_focus" value="environmental_review" id="focus_environmental"> Environmental / sleep-zone review</label>
+            <label class="check-item"><input type="checkbox" name="session_focus" value="follow_up_prior"> Follow-up from a prior session</label>
+          </div>
+        </fieldset>
+        <div class="field">
+          <label for="notes_for_practitioner">Questions or notes for the practitioner before the session</label>
+          <textarea id="notes_for_practitioner" name="notes_for_practitioner"></textarea>
+        </div>
+      </section>
+
+      <section class="card" id="sec-focus">
+        <div class="eyebrow"><span class="num">03</span><span class="tag">Optional</span></div>
+        <h2>Field Focus Areas &amp; Witness Authorization</h2>
+        <p class="hint">Select any energetic observation categories you want prioritized, and fill in witness details only if applicable.</p>
+
+        <fieldset class="check-group">
+          <legend>Focus areas</legend>
+          <div class="check-grid">
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="aura_biofield"> Aura / biofield response</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="energy_centers"> Energy centers</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="organs_glands_systems"> Harmonious state of the organs, glands, and body systems as reflected through the energetic field</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="emotional_state"> Emotional state / personal charge / mood pattern</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="thought_pattern"> Thought pattern / self-talk / mental repetition</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="meridian_flow"> Meridian flow / energetic circulation patterns</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="environmental_influence"> Environmental influence / space / object / location field</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="corrective_support"> Corrective support: sound, color, shape, frequency, vibration, or tool response</label>
+            <label class="check-item"><input type="checkbox" name="focus_areas" value="other" id="focus_other"> Other</label>
+          </div>
+        </fieldset>
+        <div class="field" id="other_focus_wrap" hidden>
+          <label for="other_focus_details">Other focus details</label>
+          <textarea id="other_focus_details" name="other_focus_details"></textarea>
+        </div>
+
+        <div class="band">Witness &amp; session subject</div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="session_subject">Subject of session (person / object / space / environment)</label>
+            <input type="text" id="session_subject" name="session_subject">
+          </div>
+          <div class="field">
+            <label for="witness_material_reference">Witness material or reference provided, if applicable</label>
+            <input type="text" id="witness_material_reference" name="witness_material_reference">
+          </div>
+          <div class="field">
+            <label for="location_object_details">Location or object details, if relevant</label>
+            <input type="text" id="location_object_details" name="location_object_details">
+          </div>
+        </div>
+
+        <fieldset class="check-group">
+          <legend>Witness material</legend>
+          <div class="check-grid cols-2">
+            <label class="check-item"><input type="checkbox" name="witness_material" value="written_name"> Written name</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="photograph"> Photograph</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="hair"> Hair</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="signature"> Signature</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="personal_object"> Personal object</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="map_floor_plan"> Map / floor plan</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="address_location"> Address / location</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="object_sample"> Object sample</label>
+            <label class="check-item"><input type="checkbox" name="witness_material" value="other"> Other</label>
+          </div>
+        </fieldset>
+
+        <label class="check-item"><input type="checkbox" name="handling_store_for_followup" id="handling_store_for_followup"> Store for follow-up with permission</label>
+        <br><br>
+        <label class="check-item"><input type="checkbox" name="authorize_witness_use" id="authorize_witness_use"> I authorize the practitioner to use the witness listed above for this VVP session only, unless otherwise agreed in writing.</label>
+      </section>
+
+      <section class="card" id="sec-consent">
+        <div class="eyebrow"><span class="num">04</span></div>
+        <h2>Scope &amp; Informed Consent</h2>
+        <div class="note">Vibrational Virtue Practice is a complementary energetic wellness method. It may use radiesthetic tools, pendulum observation, field mapping, witness work when appropriate, and corrective-support compatibility testing to observe energetic patterns and support coherence. VVP is not medical care, diagnosis, prescription, treatment, psychotherapy, environmental inspection, electrical inspection, mold testing, radon testing, EMF testing, structural assessment, legal service, or emergency service.</div>
+
+        <div class="check-grid">
+          <label class="check-item required-item"><input type="checkbox" name="consent_energetic_observations_only" required> I understand VVP findings are energetic observations only.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="checkbox" name="consent_not_replace_licensed" required> I understand VVP does not replace licensed medical, mental health, environmental, legal, or emergency services.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="checkbox" name="consent_responsible_own_decisions" required> I understand I am responsible for my own health, medical, mental health, environmental, and safety decisions.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="checkbox" name="consent_may_pause_stop" required> I understand I may pause or stop the session at any time.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="checkbox" name="consent_urgent_symptoms_professional" required> I understand urgent symptoms or safety concerns require qualified professional or emergency support.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="checkbox" name="consent_nonrefundable_policy" required> I understand sessions are non-refundable once the scheduled session has begun, and stopping early does not create eligibility for a refund.<span class="req">*</span></label>
+        </div>
+        <br>
+        <div class="band">Consent to proceed</div>
+        <label class="check-item required-item"><input type="checkbox" name="consent_to_proceed" required> I have read and understand the information above and consent to proceed.<span class="req">*</span></label>
+      </section>
+
+      <section class="card" id="sec-remote">
+        <div class="eyebrow"><span class="num">05</span><span class="tag">Optional</span></div>
+        <h2>Remote Session Authorization</h2>
+        <p class="hint">Complete only when the session will be conducted remotely.</p>
+        <label class="check-item"><input type="checkbox" name="remote_consent" id="remote_consent"> I consent to a remote VVP energetic wellness session.</label>
+        <div class="field" style="margin-top:14px;">
+          <label for="remote_notes">Remote session method, location, time zone, or other notes</label>
+          <textarea id="remote_notes" name="remote_notes"></textarea>
+        </div>
+      </section>
+
+      <section class="card" id="sec-environmental">
+        <div class="eyebrow"><span class="num">06</span><span class="tag">Optional</span></div>
+        <h2>Environmental Assessment Permission</h2>
+        <p class="hint">Complete only when a room, space, object, or location is being reviewed.</p>
+        <div class="field">
+          <label for="environmental_location">Location or room / space</label>
+          <input type="text" id="environmental_location" name="environmental_location">
+        </div>
+        <div class="check-grid">
+          <label class="check-item"><input type="checkbox" name="env_ack_not_replace_inspection"> I understand VVP environmental assessment is energetic only and does not replace licensed inspection, mold testing, radon testing, electrical evaluation, EMF measurement, structural assessment, carbon monoxide response, or emergency services.</label>
+          <label class="check-item"><input type="checkbox" name="env_ack_have_permission"> I have authority or permission to request assessment of this space.</label>
+          <label class="check-item"><input type="checkbox" name="env_ack_hazards_qualified_help"> I understand physical hazards require qualified help.</label>
+          <label class="check-item"><input type="checkbox" name="env_ack_bedroom_wireless_educational"> I understand bedroom-first and wireless-reduction guidance is educational only.</label>
+          <label class="check-item"><input type="checkbox" name="env_ack_not_safety_clearance"> I understand this is not a safety clearance.</label>
+        </div>
+      </section>
+
+      <section class="card" id="sec-touch">
+        <div class="eyebrow"><span class="num">07</span></div>
+        <h2>Touch Permission</h2>
+        <p class="hint">VVP can be performed without touch. If appropriate non-invasive touch is suggested for grounding, hand placement, or assessment support, the practitioner must explain it and obtain permission. You may refuse or stop touch at any time.</p>
+        <div class="check-grid">
+          <label class="check-item required-item"><input type="radio" name="touch_selection" value="consent" required> I consent to appropriate non-invasive touch.<span class="req">*</span></label>
+          <label class="check-item required-item"><input type="radio" name="touch_selection" value="no_consent" required> I do not consent to touch; use non-touch methods only.<span class="req">*</span></label>
+        </div>
+        <div class="field" style="margin-top:14px;">
+          <label for="touch_notes">Touch boundaries or comfort notes</label>
+          <textarea id="touch_notes" name="touch_notes"></textarea>
+        </div>
+      </section>
+
+      <section class="card" id="sec-rights">
+        <div class="eyebrow"><span class="num">08</span></div>
+        <h2>Client Rights, Privacy &amp; Emergency Care</h2>
+        <div class="note">The client has the right to a clear explanation, consent, privacy, respectful communication, safe and scope-safe language, and the ability to pause or stop the session.</div>
+        <label class="check-item required-item"><input type="checkbox" name="rights_ack" required> I acknowledge the client rights and privacy statement above.<span class="req">*</span></label>
+        <div class="field" style="margin-top:14px;">
+          <label for="privacy_prefs">Privacy or communication preferences</label>
+          <textarea id="privacy_prefs" name="privacy_prefs"></textarea>
+        </div>
+        <div class="band">Emergency care acknowledgment</div>
+        <label class="check-item required-item"><input type="checkbox" name="emergency_ack" required> I understand VVP does not replace emergency care.<span class="req">*</span></label>
+      </section>
+
+      <section class="card" id="sec-acknowledgment">
+        <div class="eyebrow"><span class="num">09</span></div>
+        <h2>Client Acknowledgment &amp; Agreement</h2>
+        <p class="hint">Review the entire packet above before completing this final acknowledgment.</p>
+        <div class="note">By checking the box and signing below, you acknowledge that you have carefully read and reviewed the entire contents of this Client Intake Packet; understand the information, policies, disclosures, permissions, and consent statements; and voluntarily agree to the applicable terms presented.</div>
+        <label class="check-item required-item"><input type="checkbox" name="final_agreement_ack" required> I have read the entire Client Intake Packet and agree to the applicable terms and consent statements.<span class="req">*</span></label>
+        <div class="grid-2" style="margin-top:18px;">
+          <div class="field">
+            <label for="client_signature">Client signature (type your full legal name)<span class="req">*</span></label>
+            <input type="text" id="client_signature" name="client_signature" required>
+          </div>
+          <div class="field">
+            <label for="signature_date">Date<span class="req">*</span></label>
+            <input type="date" id="signature_date" name="signature_date" required>
+          </div>
+        </div>
+      </section>
+
+      <div class="submit-bar">
+        <button type="submit" id="submit-btn">Submit intake</button>
+        <span id="submit-error" role="alert"></span>
+      </div>
+
+    </form>
+  </div>
+</main>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const SUPABASE_URL = "https://yvolmpnoqbzaykbbmxgb.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2b2xtcG5vcWJ6YXlrYmJteGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMjU4NTIsImV4cCI6MjA5OTkwMTg1Mn0.yqP4SdlRKKjL63BxO3X-lPnsOj4kF3cOi1s8r-2rb2Y";
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loading = document.getElementById('loading');
+  const errorScreen = document.getElementById('error-screen');
+  const errorTitle = document.getElementById('error-title');
+  const errorBody = document.getElementById('error-body');
+  const confirmation = document.getElementById('confirmation');
+  const app = document.getElementById('app');
+  const form = document.getElementById('intake-form');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitError = document.getElementById('submit-error');
+
+  function showError(title, body) {
+    loading.hidden = true;
+    errorTitle.textContent = title;
+    errorBody.textContent = body;
+    errorScreen.hidden = false;
+  }
+
+  const token = new URLSearchParams(window.location.search).get('token');
+
+  if (!token) {
+    showError("We couldn't open this intake", "This link is missing its access code. Ask your practitioner to resend the intake link.");
+    return;
+  }
+
+  sb.rpc('get_intake_request_by_token', { p_token: token }).then(({ data, error }) => {
+    if (error) {
+      showError("We couldn't open this intake", "There was a problem reaching the server. Check your connection and try reloading the page.");
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      showError("We couldn't open this intake", "Double-check the link your practitioner sent you, or ask them to send a new one.");
+      return;
+    }
+    if (row.status === 'submitted') {
+      showError("This intake has already been completed", "If you need to make changes, contact your practitioner directly.");
+      return;
+    }
+    if (row.status === 'expired' || (row.expires_at && new Date(row.expires_at) < new Date())) {
+      showError("This intake link has expired", "Ask your practitioner to send a new one.");
+      return;
+    }
+
+    document.getElementById('practitioner-name').textContent = row.practitioner_full_name || 'your practitioner';
+    if (row.client_name) document.getElementById('full_name').value = row.client_name;
+    if (row.client_email) document.getElementById('email').value = row.client_email;
+    document.getElementById('signature_date').value = new Date().toISOString().slice(0, 10);
+
+    loading.hidden = true;
+    app.hidden = false;
+    initForm();
+  });
+
+  function initForm() {
+    const SECTIONS = [
+      { id: 'sec-profile', required: ['full_name', 'session_date', 'email'] },
+      { id: 'sec-purpose', required: ['support_today'] },
+      { id: 'sec-focus', required: [], optional: true },
+      { id: 'sec-consent', required: ['consent_energetic_observations_only', 'consent_not_replace_licensed', 'consent_responsible_own_decisions', 'consent_may_pause_stop', 'consent_urgent_symptoms_professional', 'consent_nonrefundable_policy', 'consent_to_proceed'] },
+      { id: 'sec-remote', required: [], optional: true },
+      { id: 'sec-environmental', required: [], optional: true },
+      { id: 'sec-touch', required: ['touch_selection'] },
+      { id: 'sec-rights', required: ['rights_ack', 'emergency_ack'] },
+      { id: 'sec-acknowledgment', required: ['final_agreement_ack', 'client_signature', 'signature_date'] },
+    ];
+    const requiredSectionCount = SECTIONS.filter(s => !s.optional).length;
+
+    function fieldSatisfied(name) {
+      const els = form.querySelectorAll(`[name="${name}"]`);
+      if (!els.length) return false;
+      const first = els[0];
+      if (first.type === 'checkbox' || first.type === 'radio') {
+        return Array.from(els).some(e => e.checked);
+      }
+      return first.value.trim() !== '';
+    }
+
+    const railNodes = Array.from(document.querySelectorAll('.rail li[data-node]'));
+    const mobileNodes = Array.from(document.querySelectorAll('.rail-mobile a[data-node]'));
+    const railFill = document.getElementById('rail-fill');
+    const coherenceCount = document.getElementById('coherence-count');
+
+    function updateProgress() {
+      let completeRequired = 0;
+      SECTIONS.forEach((section, i) => {
+        const complete = section.required.every(fieldSatisfied);
+        if (!section.optional && complete) completeRequired++;
+        [railNodes[i], mobileNodes[i]].forEach(node => {
+          if (!node) return;
+          node.classList.toggle('complete', section.required.length ? complete : false);
+        });
+      });
+      coherenceCount.textContent = completeRequired;
+      const lastCompleteIndex = (() => {
+        let idx = -1;
+        SECTIONS.forEach((s, i) => { if (s.required.length && s.required.every(fieldSatisfied)) idx = i; });
+        return idx;
+      })();
+      railFill.style.height = SECTIONS.length > 1 ? (lastCompleteIndex >= 0 ? ((lastCompleteIndex + 1) / SECTIONS.length * 100) + '%' : '0%') : '0%';
+    }
+
+    form.addEventListener('input', updateProgress);
+    form.addEventListener('change', updateProgress);
+    updateProgress();
+
+    // Conditional reveal: "Other" focus area detail field
+    const focusOther = document.getElementById('focus_other');
+    const otherWrap = document.getElementById('other_focus_wrap');
+    focusOther.addEventListener('change', () => { otherWrap.hidden = !focusOther.checked; });
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      submitError.textContent = '';
+
+      if (!form.reportValidity()) {
+        return;
+      }
+
+      const fd = new FormData(form);
+      const payload = {};
+      const multi = new Set(['session_type', 'session_focus', 'focus_areas', 'witness_material']);
+      multi.forEach(name => payload[name] = fd.getAll(name));
+
+      for (const [key, value] of fd.entries()) {
+        if (multi.has(key)) continue;
+        if (form.elements[key] && form.elements[key].type === 'checkbox' && !(form.elements[key] instanceof RadioNodeList)) {
+          payload[key] = true;
+        } else {
+          payload[key] = value;
+        }
+      }
+      // Checkboxes that were left unchecked never appear in FormData — fill them in as false.
+      form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (!multi.has(cb.name) && !(cb.name in payload)) payload[cb.name] = false;
+      });
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      sb.rpc('submit_client_intake', { p_token: token, p_form_data: payload }).then(({ error }) => {
+        if (error) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit intake';
+          submitError.textContent = error.message || 'Something went wrong sending your intake. Your answers are still on this page — check your connection and try again.';
+          return;
+        }
+        app.hidden = true;
+        confirmation.hidden = false;
+        window.scrollTo(0, 0);
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
