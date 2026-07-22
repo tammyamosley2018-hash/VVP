@@ -185,6 +185,10 @@
 
             practitionerId = practitioner.id;
             sendingAs.textContent = 'Sending as ' + (practitioner.full_name || data.session.user.email);
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('name')) document.getElementById('client_name').value = params.get('name');
+            if (params.get('email')) document.getElementById('client_email').value = params.get('email');
           });
       });
   });

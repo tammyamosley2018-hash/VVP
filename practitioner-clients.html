@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Clients — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 40px 30px;
+    text-align: center;
+    color: var(--ink-mute);
+  }
+
+  .client-row {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .client-row .info .name { font-weight: 600; color: var(--ink); }
+  .client-row .info .meta { color: var(--ink-mute); font-size: 0.85rem; margin-top: 2px; }
+  .client-row .actions a {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--crystal);
+    text-decoration: none;
+    border: 1.5px solid var(--crystal-pale);
+    padding: 7px 14px;
+    border-radius: 8px;
+  }
+  .client-row .actions a:hover { background: var(--crystal-pale); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Clients</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Your clients</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div id="message" class="message error" role="alert" hidden></div>
+  <div id="loading-list" class="spinner"></div>
+  <div id="empty" class="empty" hidden>No clients yet. Clients are added automatically the first time you send them an intake.</div>
+  <div id="list"></div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const message = document.getElementById('message');
+  const loadingList = document.getElementById('loading-list');
+  const emptyEl = document.getElementById('empty');
+  const list = document.getElementById('list');
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  function escapeAttr(str) {
+    return String(str == null ? '' : str).replace(/"/g, '&quot;');
+  }
+
+  function renderClient(client) {
+    const row = document.createElement('div');
+    row.className = 'client-row';
+    const memberSince = new Date(client.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const sendUrl = 'send-intake.html?name=' + encodeURIComponent(client.full_name || '') + '&email=' + encodeURIComponent(client.email || '');
+    row.innerHTML =
+      '<div class="info">' +
+        '<div class="name">' + escapeAttr(client.full_name) + '</div>' +
+        '<div class="meta">' + escapeAttr(client.email) + (client.phone ? ' · ' + escapeAttr(client.phone) : '') + ' · Client since ' + memberSince + '</div>' +
+      '</div>' +
+      '<div class="actions"><a href="' + sendUrl + '">Send another intake</a></div>';
+    return row;
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        checking.hidden = true;
+        shell.hidden = false;
+
+        sb.from('clients')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .then(({ data: clients, error: clientsError }) => {
+            loadingList.hidden = true;
+            if (clientsError) {
+              showError('Could not load clients: ' + clientsError.message);
+              return;
+            }
+            if (!clients || clients.length === 0) {
+              emptyEl.hidden = false;
+              return;
+            }
+            clients.forEach((client) => list.appendChild(renderClient(client)));
+          });
+      });
+  });
+})();
+</script>
+</body>
+</html>
