@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Your Results — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-cream.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 720px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 40px 30px; text-align: center; color: var(--ink-mute); }
+
+  .report {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 22px;
+    overflow: hidden;
+  }
+  .report-head { background: var(--navy); color: var(--parchment); padding: 18px 24px; }
+  .report-head .date { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold-bright); }
+  .report-head .focus { font-family: 'Fraunces', serif; font-size: 1.2rem; margin-top: 4px; }
+  .report-body { padding: 4px 24px 20px; }
+
+  .sub-section { margin-top: 20px; }
+  .sub-section h3 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--gold); border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 10px;
+  }
+  .row { display: grid; grid-template-columns: 200px 1fr; gap: 10px; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px solid var(--line); }
+  @media (max-width: 560px) { .row { grid-template-columns: 1fr; gap: 2px; } }
+  .row:last-child { border-bottom: none; }
+  .row .k { font-weight: 600; color: var(--ink-mute); }
+  .row .v { color: var(--ink); white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Your Results</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Your results</h1>
+    <a href="client-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to portal</a>
+  </div>
+  <div id="loading-list" class="spinner"></div>
+  <div id="empty" class="empty" hidden>No results have been shared with you yet.</div>
+  <div id="list"></div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const loadingList = document.getElementById('loading-list');
+  const emptyEl = document.getElementById('empty');
+  const list = document.getElementById('list');
+
+  const FIELD_RESPONSE_AREAS = [
+    { key: 'overall_coherence', label: 'Overall coherence' },
+    { key: 'stress_dissonance', label: 'Stress / dissonance' },
+    { key: 'energy_vitality', label: 'Energy / vitality' },
+    { key: 'field_balance', label: 'Field balance' },
+    { key: 'environmental_influence', label: 'Environmental influence' },
+  ];
+  const ENERGY_CENTERS = [
+    { key: 'crown', label: 'Crown' }, { key: 'third_eye', label: 'Third Eye' },
+    { key: 'throat', label: 'Throat' }, { key: 'heart', label: 'Heart' },
+    { key: 'solar_plexus', label: 'Solar Plexus' }, { key: 'sacral', label: 'Sacral' },
+    { key: 'root', label: 'Root' },
+  ];
+  const BIOFIELD_LAYERS = [
+    { key: 'physical_etheric', label: 'Physical / Etheric Layer' }, { key: 'emotional', label: 'Emotional Layer' },
+    { key: 'mental', label: 'Mental Layer' }, { key: 'astral', label: 'Astral Layer' },
+    { key: 'etheric', label: 'Etheric Layer' }, { key: 'celestial', label: 'Celestial Layer' },
+    { key: 'ketheric', label: 'Ketheric Layer' },
+  ];
+
+  const hasText = (v) => typeof v === 'string' && v.trim() !== '';
+
+  function row(container, label, value) {
+    if (!hasText(value)) return;
+    const el = document.createElement('div');
+    el.className = 'row';
+    el.innerHTML = '<div class="k"></div><div class="v"></div>';
+    el.querySelector('.k').textContent = label;
+    el.querySelector('.v').textContent = value;
+    container.appendChild(el);
+  }
+
+  function subSection(parent, title) {
+    const wrap = document.createElement('div');
+    wrap.className = 'sub-section';
+    wrap.innerHTML = '<h3></h3>';
+    wrap.querySelector('h3').textContent = title;
+    parent.appendChild(wrap);
+    return wrap;
+  }
+
+  function renderFieldResponse(body, data) {
+    if (!data) return;
+    const areasWithContent = FIELD_RESPONSE_AREAS.filter(a => {
+      const d = data.field_response && data.field_response[a.key];
+      return d && (hasText(d.baseline) || hasText(d.reassessment) || hasText(d.status) || hasText(d.notes));
+    });
+    const extras = ['correction_support_tested', 'confirmation_method_notes', 'stabilization_notes'];
+    const hasExtras = extras.some(k => hasText(data[k]));
+    if (areasWithContent.length === 0 && !hasExtras) return;
+
+    const sec = subSection(body, 'Client Results Report');
+    areasWithContent.forEach(a => {
+      const d = data.field_response[a.key];
+      const parts = [];
+      if (hasText(d.baseline)) parts.push('Baseline: ' + d.baseline);
+      if (hasText(d.reassessment)) parts.push('Reassessment: ' + d.reassessment);
+      if (hasText(d.status)) parts.push('Status: ' + d.status);
+      if (hasText(d.notes)) parts.push('Notes: ' + d.notes);
+      row(sec, a.label, parts.join(' · '));
+    });
+    row(sec, 'Correction / support tested', data.correction_support_tested);
+    row(sec, 'Confirmation / retest notes', data.confirmation_method_notes);
+    row(sec, 'Stabilization notes', data.stabilization_notes);
+    if (data.field_sealed_stabilized) row(sec, 'Field sealed & stabilized', 'Yes');
+    if (data.follow_up_recommended) row(sec, 'Follow-up recommended', 'Yes');
+  }
+
+  function renderEnergyCenters(body, data) {
+    if (!data || !data.energy_centers) return;
+    const withContent = ENERGY_CENTERS.filter(c => {
+      const d = data.energy_centers[c.key];
+      return d && (hasText(d.baseline) || hasText(d.reassessment));
+    });
+    if (withContent.length === 0) return;
+
+    const sec = subSection(body, 'Energy Center Alignment');
+    withContent.forEach(c => {
+      const d = data.energy_centers[c.key];
+      const parts = [];
+      if (hasText(d.baseline)) parts.push('Baseline: ' + d.baseline);
+      if (hasText(d.reassessment)) parts.push('Reassessment: ' + d.reassessment);
+      row(sec, c.label, parts.join(' · '));
+    });
+  }
+
+  function renderBiofield(body, data) {
+    if (!data) return;
+    const withContent = BIOFIELD_LAYERS.filter(l => {
+      const d = data.biofield && data.biofield[l.key];
+      return d && (hasText(d.what_we_found) || hasText(d.baseline) || hasText(d.reassessment));
+    });
+    const hasSummary = hasText(data.practitioner_summary) || hasText(data.recommended_next_steps);
+    if (withContent.length === 0 && !hasSummary) return;
+
+    const sec = subSection(body, 'Biofield Scan Overview');
+    withContent.forEach(l => {
+      const d = data.biofield[l.key];
+      const parts = [];
+      if (hasText(d.what_we_found)) parts.push(d.what_we_found);
+      if (hasText(d.baseline)) parts.push('Baseline: ' + d.baseline);
+      if (hasText(d.reassessment)) parts.push('Reassessment: ' + d.reassessment);
+      row(sec, l.label, parts.join(' · '));
+    });
+    row(sec, 'Practitioner summary', data.practitioner_summary);
+    row(sec, 'Recommended next steps', data.recommended_next_steps);
+  }
+
+  function renderEnvironmental(body, data) {
+    const e = data && data.environmental;
+    if (!e) return;
+    const fields = [
+      ['Space / location reviewed', e.space_reviewed],
+      ['Main environmental priority', e.main_priority],
+      ['Wireless / device load notes', e.wireless_notes],
+      ['Bedroom-first / sleep-zone notes', e.bedroom_notes],
+      ['Physical-first referral notes', e.referral_notes],
+      ['Reassessment / observation guidance', e.reassessment_guidance],
+    ];
+    if (!fields.some(([, v]) => hasText(v))) return;
+    const sec = subSection(body, 'Environmental Results Summary');
+    fields.forEach(([label, value]) => row(sec, label, value));
+  }
+
+  function renderHomeSupport(body, data) {
+    const h = data && data.home_support;
+    if (!h) return;
+    const fields = [
+      ['Main energetic priority', h.main_priority],
+      ['Corrective support', h.corrective_support],
+      ['Home support recommendations', h.recommendations],
+      ['What to observe', h.what_to_observe],
+      ['What to avoid', h.what_to_avoid],
+      ['Follow-up timeframe', h.follow_up_timeframe],
+      ['Referral reminder', h.referral_reminder],
+    ];
+    if (!fields.some(([, v]) => hasText(v))) return;
+    const sec = subSection(body, 'Home Support & Follow-Up Plan');
+    fields.forEach(([label, value]) => row(sec, label, value));
+  }
+
+  function renderReport(result) {
+    const data = result.result_data || {};
+    const wrap = document.createElement('div');
+    wrap.className = 'report';
+
+    const head = document.createElement('div');
+    head.className = 'report-head';
+    const dateStr = new Date(data.session_date || result.created_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+    head.innerHTML = '<div class="date"></div><div class="focus"></div>';
+    head.querySelector('.date').textContent = 'Session · ' + dateStr;
+    head.querySelector('.focus').textContent = hasText(data.primary_focus) ? data.primary_focus : 'Session Results';
+
+    const body = document.createElement('div');
+    body.className = 'report-body';
+
+    renderFieldResponse(body, data);
+    renderEnergyCenters(body, data);
+    renderBiofield(body, data);
+    renderEnvironmental(body, data);
+    renderHomeSupport(body, data);
+
+    if (!body.hasChildNodes()) {
+      const note = document.createElement('p');
+      note.style.color = 'var(--ink-mute)';
+      note.style.paddingTop = '14px';
+      note.textContent = 'Your practitioner has shared this session, with more detail to come.';
+      body.appendChild(note);
+    }
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile) {
+          window.location.href = 'login.html';
+          return;
+        }
+        if (profile.role === 'practitioner' || profile.role === 'admin') {
+          window.location.href = 'practitioner-dashboard.html';
+          return;
+        }
+
+        checking.hidden = true;
+        shell.hidden = false;
+
+        sb.from('client_results')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .then(({ data: results, error: resultsError }) => {
+            loadingList.hidden = true;
+            if (resultsError) {
+              emptyEl.hidden = false;
+              emptyEl.textContent = 'Could not load your results: ' + resultsError.message;
+              return;
+            }
+            if (!results || results.length === 0) {
+              emptyEl.hidden = false;
+              return;
+            }
+            results.forEach(r => list.appendChild(renderReport(r)));
+          });
+      });
+  });
+})();
+</script>
+</body>
+</html>

@@ -94,14 +94,27 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  v_role text := coalesce(new.raw_user_meta_data ->> 'role', 'client');
 begin
   insert into profiles (id, role, full_name, email)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data ->> 'role', 'client'),
+    v_role,
     new.raw_user_meta_data ->> 'full_name',
     new.email
   );
+
+  -- A practitioner may have already created a `clients` row for this
+  -- person's email (from sending them an intake) before they ever signed
+  -- up for portal access. Link it now so RLS recognizes them as that
+  -- client. Safe even before email confirmation: an unconfirmed account
+  -- can't actually authenticate yet, so this can't be used to hijack
+  -- someone else's client record without controlling their inbox.
+  if v_role = 'client' then
+    update clients set user_id = new.id where email = new.email and user_id is null;
+  end if;
+
   return new;
 end;
 $$;

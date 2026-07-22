@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Your Portal — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-cream.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 620px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 28px; }
+  .card p { color: var(--ink-mute); }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Your Portal</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1 id="greeting">Welcome</h1>
+    <button type="button" class="btn-outline" id="sign-out-btn">Sign out</button>
+  </div>
+  <div class="card">
+    <p id="card-text" style="margin-top:0;"></p>
+    <a id="results-link" href="client-results.html" class="btn-gold" style="display:none; width:auto; text-decoration:none;">View my results</a>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const greeting = document.getElementById('greeting');
+  const cardText = document.getElementById('card-text');
+  const resultsLink = document.getElementById('results-link');
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role, full_name')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile) {
+          window.location.href = 'login.html';
+          return;
+        }
+        if (profile.role === 'practitioner' || profile.role === 'admin') {
+          window.location.href = 'practitioner-dashboard.html';
+          return;
+        }
+
+        checking.hidden = true;
+        shell.hidden = false;
+        greeting.textContent = 'Welcome, ' + (profile.full_name || data.session.user.email);
+
+        sb.from('clients')
+          .select('id')
+          .eq('user_id', data.session.user.id)
+          .then(({ data: clientRows }) => {
+            if (clientRows && clientRows.length > 0) {
+              cardText.textContent = "Your practitioner shares session results here once they're ready.";
+              resultsLink.style.display = 'inline-block';
+            } else {
+              cardText.textContent = "We don't see any records linked to this account yet. If you've worked with a VVP practitioner using this email, check back soon or reach out to them directly.";
+            }
+          });
+      });
+  });
+
+  document.getElementById('sign-out-btn').addEventListener('click', () => {
+    sb.auth.signOut().then(() => { window.location.href = 'login.html'; });
+  });
+})();
+</script>
+</body>
+</html>

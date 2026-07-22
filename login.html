@@ -74,7 +74,7 @@
       <button type="submit" class="btn-gold" id="submit-btn">Log in</button>
     </form>
 
-    <p class="footnote">Don't have login access yet? Contact your practitioner or administrator.</p>
+    <p class="footnote">New client? <a href="client-signup.html">Create an account</a>. Practitioners: contact your administrator.</p>
   </div>
 
   <div id="pending-role" class="card" hidden>
@@ -124,10 +124,13 @@
       return;
     }
 
+    if (profile.role === 'client') {
+      window.location.href = 'client-dashboard.html';
+      return;
+    }
+
     pendingRole.hidden = false;
-    pendingRoleText.textContent = profile.role === 'client'
-      ? "The client portal isn't available yet — check back soon."
-      : "There's no portal set up for your account type yet.";
+    pendingRoleText.textContent = "There's no portal set up for your account type yet.";
   }
 
   sb.auth.getSession().then(({ data }) => {
