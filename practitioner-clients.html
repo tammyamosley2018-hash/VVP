@@ -66,6 +66,7 @@
     border-radius: 8px;
   }
   .client-row .actions a:hover { background: var(--crystal-pale); }
+  .client-row .actions { display: flex; gap: 8px; }
 </style>
 </head>
 <body>
@@ -119,12 +120,13 @@
     row.className = 'client-row';
     const memberSince = new Date(client.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     const sendUrl = 'send-intake.html?name=' + encodeURIComponent(client.full_name || '') + '&email=' + encodeURIComponent(client.email || '');
+    const resultsUrl = 'upload-client-results.html?client_id=' + encodeURIComponent(client.id);
     row.innerHTML =
       '<div class="info">' +
         '<div class="name">' + escapeAttr(client.full_name) + '</div>' +
         '<div class="meta">' + escapeAttr(client.email) + (client.phone ? ' · ' + escapeAttr(client.phone) : '') + ' · Client since ' + memberSince + '</div>' +
       '</div>' +
-      '<div class="actions"><a href="' + sendUrl + '">Send another intake</a></div>';
+      '<div class="actions"><a href="' + resultsUrl + '">Add results</a><a href="' + sendUrl + '">Send another intake</a></div>';
     return row;
   }
 

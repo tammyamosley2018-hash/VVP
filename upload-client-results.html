@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Upload Client Results — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 820px; margin: 0 auto; padding: 40px 20px 100px; }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  section.card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 26px 26px 30px;
+    margin-bottom: 22px;
+  }
+  section.card .eyebrow { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  section.card .eyebrow .tag {
+    margin-left: auto;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--crystal);
+    border: 1px solid var(--crystal-pale);
+    background: var(--crystal-pale);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  section.card h2 { font-size: 1.3rem; margin: 0 0 6px; }
+  section.card .hint { color: var(--ink-mute); font-size: 0.88rem; margin: 0 0 18px; }
+
+  .grid-2 { display: grid; gap: 16px; }
+  @media (min-width: 620px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    font: inherit;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--parchment);
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--crystal); background: #fff; }
+  .field textarea { min-height: 80px; resize: vertical; }
+
+  table.resp-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 0.88rem; }
+  table.resp-table th { text-align: left; font-size: 0.78rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.04em; padding: 0 8px 8px 0; }
+  table.resp-table td { padding: 4px 8px 4px 0; vertical-align: top; }
+  table.resp-table td:first-child { font-weight: 600; padding-top: 10px; white-space: nowrap; }
+  table.resp-table input { width: 100%; font: inherit; font-size: 0.85rem; padding: 7px 9px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--parchment); }
+  table.resp-table input:focus { border-color: var(--crystal); background: #fff; }
+  @media (max-width: 700px) {
+    table.resp-table, table.resp-table thead, table.resp-table tbody, table.resp-table th, table.resp-table td, table.resp-table tr { display: block; }
+    table.resp-table thead { display: none; }
+    table.resp-table tr { margin-bottom: 14px; }
+    table.resp-table td { padding: 3px 0; }
+  }
+
+  .center-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 6px; }
+  .center-card { border-radius: 10px; padding: 12px; border: 1px solid var(--line); border-top: 4px solid var(--accent, var(--gold)); background: var(--parchment); }
+  .center-card .label { font-weight: 600; font-size: 0.88rem; margin-bottom: 8px; }
+  .center-card input { width: 100%; font: inherit; font-size: 0.82rem; padding: 6px 8px; margin-bottom: 6px; border: 1.5px solid var(--line); border-radius: 6px; background: #fff; }
+  .center-card input::placeholder { color: var(--ink-mute); opacity: 0.7; }
+
+  .layer-row { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .layer-row .layer-label { font-weight: 600; margin-bottom: 10px; }
+  .layer-row .layer-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+  @media (max-width: 620px) { .layer-row .layer-fields { grid-template-columns: 1fr; } }
+  .layer-row input { width: 100%; font: inherit; font-size: 0.85rem; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--parchment); }
+  .layer-row input:focus { border-color: var(--crystal); background: #fff; }
+  .layer-row .layer-fields label { display: block; font-size: 0.72rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+
+  .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; margin-bottom: 10px; }
+  .check-item input { margin-top: 3px; flex: none; width: 18px; height: 18px; accent-color: var(--gold); }
+
+  .submit-bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  #submit-error { color: var(--error); font-size: 0.88rem; }
+  .result-glyph {
+    width: 44px; height: 44px; margin: 0 auto 16px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+  }
+  #confirmation { text-align: center; }
+  #confirmation h2 { font-size: 1.4rem; margin: 0 0 8px; }
+  #confirmation p { color: var(--ink-mute); }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Upload Client Results</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Upload client results</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div id="message" class="message error" role="alert" hidden></div>
+
+  <div id="form-wrap">
+    <section class="card">
+      <h2>Session</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label for="client_select">Client</label>
+          <select id="client_select" required></select>
+        </div>
+        <div class="field">
+          <label for="session_date">Session date</label>
+          <input type="date" id="session_date">
+        </div>
+        <div class="field">
+          <label for="session_mode">Session mode</label>
+          <input type="text" id="session_mode" placeholder="In-person / Remote">
+        </div>
+        <div class="field">
+          <label for="primary_focus">Primary focus / question</label>
+          <input type="text" id="primary_focus">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow"><h2>Client Results Report</h2></div>
+      <table class="resp-table">
+        <thead><tr><th></th><th>Baseline</th><th>Reassessment</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody id="field-response-body"></tbody>
+      </table>
+      <div class="field">
+        <label for="correction_support_tested">Correction or support tested as compatible</label>
+        <input type="text" id="correction_support_tested">
+      </div>
+      <div class="field">
+        <label for="confirmation_method_notes">Confirmation method / retest notes</label>
+        <textarea id="confirmation_method_notes"></textarea>
+      </div>
+      <div class="field">
+        <label for="stabilization_notes">Stabilization notes</label>
+        <textarea id="stabilization_notes"></textarea>
+      </div>
+      <label class="check-item"><input type="checkbox" id="field_sealed_stabilized"> Field sealed and stabilized before closing</label>
+      <label class="check-item"><input type="checkbox" id="follow_up_recommended"> Follow-up recommended</label>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow"><h2>Energy Center Alignment</h2></div>
+      <p class="hint">Baseline and reassessment for each center.</p>
+      <div class="center-grid" id="energy-centers"></div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow"><h2>Biofield Scan Overview</h2></div>
+      <p class="hint">What was found in each layer, plus baseline and reassessment.</p>
+      <div id="biofield-layers"></div>
+      <div class="field" style="margin-top:16px;">
+        <label for="practitioner_summary">Practitioner summary</label>
+        <textarea id="practitioner_summary" placeholder="Key observations, overall patterns, and insights."></textarea>
+      </div>
+      <div class="field">
+        <label for="recommended_next_steps">Recommended next steps</label>
+        <textarea id="recommended_next_steps" placeholder="Practitioner guidance, supportive actions, and integration suggestions."></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow"><h2>Environmental Results Summary</h2><span class="tag">Optional</span></div>
+      <p class="hint">Complete only if an environmental review was part of this session.</p>
+      <div class="field">
+        <label for="env_space_reviewed">Space / location reviewed</label>
+        <input type="text" id="env_space_reviewed">
+      </div>
+      <div class="field">
+        <label for="env_main_priority">Main environmental priority observed</label>
+        <textarea id="env_main_priority"></textarea>
+      </div>
+      <div class="field">
+        <label for="env_wireless_notes">Wireless / device load notes</label>
+        <textarea id="env_wireless_notes"></textarea>
+      </div>
+      <div class="field">
+        <label for="env_bedroom_notes">Bedroom-first or sleep-zone notes</label>
+        <textarea id="env_bedroom_notes"></textarea>
+      </div>
+      <div class="field">
+        <label for="env_referral_notes">Physical-first referral notes</label>
+        <textarea id="env_referral_notes"></textarea>
+      </div>
+      <div class="field">
+        <label for="env_reassessment_guidance">Reassessment / observation guidance</label>
+        <textarea id="env_reassessment_guidance"></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="eyebrow"><h2>Home Support &amp; Follow-Up Plan</h2></div>
+      <div class="field">
+        <label for="hs_main_priority">Main energetic priority</label>
+        <textarea id="hs_main_priority"></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_corrective_support">Corrective support</label>
+        <textarea id="hs_corrective_support"></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_recommendations">Home support recommendations</label>
+        <textarea id="hs_recommendations"></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_what_to_observe">What to observe</label>
+        <textarea id="hs_what_to_observe"></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_what_to_avoid">What to avoid</label>
+        <textarea id="hs_what_to_avoid"></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_follow_up_timeframe">Follow-up timeframe</label>
+        <input type="text" id="hs_follow_up_timeframe">
+      </div>
+      <div class="field">
+        <label for="hs_referral_reminder">Referral reminder</label>
+        <textarea id="hs_referral_reminder"></textarea>
+      </div>
+    </section>
+
+    <section class="card">
+      <label class="check-item"><input type="checkbox" id="visible_to_client"> Make this visible to the client once their portal is ready</label>
+      <div class="submit-bar">
+        <button type="button" class="btn-gold" id="submit-btn" style="width:auto; padding:13px 28px;">Save results</button>
+        <span id="submit-error"></span>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirmation" class="card" hidden>
+    <div class="result-glyph">✓</div>
+    <h2>Results saved</h2>
+    <p>Saved for <strong id="confirmation-name"></strong>.</p>
+    <button type="button" class="btn-outline" id="add-another-btn">Add another results entry</button>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const message = document.getElementById('message');
+  const formWrap = document.getElementById('form-wrap');
+  const confirmation = document.getElementById('confirmation');
+  const clientSelect = document.getElementById('client_select');
+  const submitBtn = document.getElementById('submit-btn');
+  const submitError = document.getElementById('submit-error');
+
+  let practitionerId = null;
+  let clients = [];
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  const FIELD_RESPONSE_AREAS = [
+    { key: 'overall_coherence', label: 'Overall coherence' },
+    { key: 'stress_dissonance', label: 'Stress / dissonance' },
+    { key: 'energy_vitality', label: 'Energy / vitality' },
+    { key: 'field_balance', label: 'Field balance' },
+    { key: 'environmental_influence', label: 'Environmental influence' },
+  ];
+
+  const ENERGY_CENTERS = [
+    { key: 'crown', label: 'Crown', color: '#7B5FB8' },
+    { key: 'third_eye', label: 'Third Eye', color: '#4B5FC9' },
+    { key: 'throat', label: 'Throat', color: '#3B8FC9' },
+    { key: 'heart', label: 'Heart', color: '#4FA36B' },
+    { key: 'solar_plexus', label: 'Solar Plexus', color: '#D9A02B' },
+    { key: 'sacral', label: 'Sacral', color: '#D9772B' },
+    { key: 'root', label: 'Root', color: '#C24B4B' },
+  ];
+
+  const BIOFIELD_LAYERS = [
+    { key: 'physical_etheric', label: 'Physical / Etheric Layer', hint: 'Vital energy, structure, embodiment' },
+    { key: 'emotional', label: 'Emotional Layer', hint: 'Feelings, balance, flow' },
+    { key: 'mental', label: 'Mental Layer', hint: 'Thoughts, beliefs, clarity' },
+    { key: 'astral', label: 'Astral Layer', hint: 'Imagination, connection, experience' },
+    { key: 'etheric', label: 'Etheric Layer', hint: 'Life patterns, habits, tendencies' },
+    { key: 'celestial', label: 'Celestial Layer', hint: 'Higher connection, purpose, guidance' },
+    { key: 'ketheric', label: 'Ketheric Layer', hint: 'Soul essence, unity, divine alignment' },
+  ];
+
+  function buildFieldResponseRows() {
+    const tbody = document.getElementById('field-response-body');
+    FIELD_RESPONSE_AREAS.forEach((area) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + area.label + '</td>' +
+        '<td><input type="text" id="fr_' + area.key + '_baseline"></td>' +
+        '<td><input type="text" id="fr_' + area.key + '_reassessment"></td>' +
+        '<td><input type="text" id="fr_' + area.key + '_status"></td>' +
+        '<td><input type="text" id="fr_' + area.key + '_notes"></td>';
+      tbody.appendChild(tr);
+    });
+  }
+
+  function buildEnergyCenters() {
+    const wrap = document.getElementById('energy-centers');
+    ENERGY_CENTERS.forEach((center) => {
+      const card = document.createElement('div');
+      card.className = 'center-card';
+      card.style.setProperty('--accent', center.color);
+      card.innerHTML =
+        '<div class="label">' + center.label + '</div>' +
+        '<input type="text" id="ec_' + center.key + '_baseline" placeholder="Baseline">' +
+        '<input type="text" id="ec_' + center.key + '_reassessment" placeholder="Reassessment">';
+      wrap.appendChild(card);
+    });
+  }
+
+  function buildBiofieldLayers() {
+    const wrap = document.getElementById('biofield-layers');
+    BIOFIELD_LAYERS.forEach((layer) => {
+      const row = document.createElement('div');
+      row.className = 'layer-row';
+      row.innerHTML =
+        '<div class="layer-label">' + layer.label + ' <span style="font-weight:400; color:var(--ink-mute); font-size:0.8rem;">— ' + layer.hint + '</span></div>' +
+        '<div class="layer-fields">' +
+          '<div><label>What we found</label><input type="text" id="bf_' + layer.key + '_found"></div>' +
+          '<div><label>Baseline</label><input type="text" id="bf_' + layer.key + '_baseline"></div>' +
+          '<div><label>Reassessment</label><input type="text" id="bf_' + layer.key + '_reassessment"></div>' +
+        '</div>';
+      wrap.appendChild(row);
+    });
+  }
+
+  buildFieldResponseRows();
+  buildEnergyCenters();
+  buildBiofieldLayers();
+
+  const val = (id) => document.getElementById(id).value.trim();
+  const checked = (id) => document.getElementById(id).checked;
+
+  function collectResultData() {
+    const fieldResponse = {};
+    FIELD_RESPONSE_AREAS.forEach((a) => {
+      fieldResponse[a.key] = {
+        baseline: val('fr_' + a.key + '_baseline'),
+        reassessment: val('fr_' + a.key + '_reassessment'),
+        status: val('fr_' + a.key + '_status'),
+        notes: val('fr_' + a.key + '_notes'),
+      };
+    });
+
+    const energyCenters = {};
+    ENERGY_CENTERS.forEach((c) => {
+      energyCenters[c.key] = {
+        baseline: val('ec_' + c.key + '_baseline'),
+        reassessment: val('ec_' + c.key + '_reassessment'),
+      };
+    });
+
+    const biofield = {};
+    BIOFIELD_LAYERS.forEach((l) => {
+      biofield[l.key] = {
+        what_we_found: val('bf_' + l.key + '_found'),
+        baseline: val('bf_' + l.key + '_baseline'),
+        reassessment: val('bf_' + l.key + '_reassessment'),
+      };
+    });
+
+    return {
+      session_date: val('session_date'),
+      session_mode: val('session_mode'),
+      primary_focus: val('primary_focus'),
+      field_response: fieldResponse,
+      correction_support_tested: val('correction_support_tested'),
+      confirmation_method_notes: val('confirmation_method_notes'),
+      stabilization_notes: val('stabilization_notes'),
+      field_sealed_stabilized: checked('field_sealed_stabilized'),
+      follow_up_recommended: checked('follow_up_recommended'),
+      energy_centers: energyCenters,
+      biofield: biofield,
+      practitioner_summary: val('practitioner_summary'),
+      recommended_next_steps: val('recommended_next_steps'),
+      environmental: {
+        space_reviewed: val('env_space_reviewed'),
+        main_priority: val('env_main_priority'),
+        wireless_notes: val('env_wireless_notes'),
+        bedroom_notes: val('env_bedroom_notes'),
+        referral_notes: val('env_referral_notes'),
+        reassessment_guidance: val('env_reassessment_guidance'),
+      },
+      home_support: {
+        main_priority: val('hs_main_priority'),
+        corrective_support: val('hs_corrective_support'),
+        recommendations: val('hs_recommendations'),
+        what_to_observe: val('hs_what_to_observe'),
+        what_to_avoid: val('hs_what_to_avoid'),
+        follow_up_timeframe: val('hs_follow_up_timeframe'),
+        referral_reminder: val('hs_referral_reminder'),
+      },
+    };
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        sb.from('practitioners')
+          .select('id')
+          .eq('user_id', data.session.user.id)
+          .single()
+          .then(({ data: practitioner, error: practError }) => {
+            checking.hidden = true;
+            shell.hidden = false;
+
+            if (practError || !practitioner) {
+              showError("Your account isn't linked to a practitioner profile yet — contact your administrator.");
+              formWrap.hidden = true;
+              return;
+            }
+            practitionerId = practitioner.id;
+
+            sb.from('clients')
+              .select('id, full_name, email')
+              .order('full_name')
+              .then(({ data: clientRows, error: clientsError }) => {
+                if (clientsError) {
+                  showError('Could not load clients: ' + clientsError.message);
+                  formWrap.hidden = true;
+                  return;
+                }
+                if (!clientRows || clientRows.length === 0) {
+                  showError('You have no clients yet — send an intake first, or add one from the Clients page.');
+                  formWrap.hidden = true;
+                  return;
+                }
+                clients = clientRows;
+                clientSelect.innerHTML = clients.map(c => '<option value="' + c.id + '">' + c.full_name + ' — ' + c.email + '</option>').join('');
+
+                const params = new URLSearchParams(window.location.search);
+                const preselect = params.get('client_id');
+                if (preselect && clients.some(c => c.id === preselect)) {
+                  clientSelect.value = preselect;
+                }
+
+                document.getElementById('session_date').value = new Date().toISOString().slice(0, 10);
+              });
+          });
+      });
+  });
+
+  submitBtn.addEventListener('click', function () {
+    submitError.textContent = '';
+
+    if (!clientSelect.value) {
+      submitError.textContent = 'Select a client first.';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    sb.from('client_results')
+      .insert({
+        practitioner_id: practitionerId,
+        client_id: clientSelect.value,
+        result_data: collectResultData(),
+        visible_to_client: checked('visible_to_client'),
+      })
+      .then(({ error }) => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save results';
+
+        if (error) {
+          submitError.textContent = error.message || 'Something went wrong saving these results. Try again.';
+          return;
+        }
+
+        const client = clients.find(c => c.id === clientSelect.value);
+        document.getElementById('confirmation-name').textContent = client ? client.full_name : 'this client';
+        formWrap.hidden = true;
+        confirmation.hidden = false;
+        window.scrollTo(0, 0);
+      });
+  });
+
+  document.getElementById('add-another-btn').addEventListener('click', () => {
+    confirmation.hidden = true;
+    formWrap.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>
