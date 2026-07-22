@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Intake Submissions — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 40px 30px;
+    text-align: center;
+    color: var(--ink-mute);
+  }
+
+  .submission {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .submission-head {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 22px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+  }
+  .submission-head:hover { background: var(--sand); }
+  .submission-head .name { font-weight: 600; color: var(--ink); }
+  .submission-head .email { color: var(--ink-mute); font-size: 0.88rem; }
+  .submission-head .date {
+    font-size: 0.78rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex: none;
+  }
+  .submission-head .chevron {
+    transition: transform 0.2s;
+    color: var(--ink-mute);
+    flex: none;
+  }
+  .submission.open .chevron { transform: rotate(90deg); }
+
+  .submission-body {
+    border-top: 1px solid var(--line);
+    padding: 18px 22px 22px;
+    background: var(--parchment);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 620px) { .field-row { grid-template-columns: 1fr; gap: 2px; } }
+  .field-row:last-child { border-bottom: none; }
+  .field-row .k { font-weight: 600; color: var(--ink-mute); }
+  .field-row .v { color: var(--ink); white-space: pre-wrap; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Intake Submissions</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Intake submissions</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div id="message" class="message error" role="alert" hidden></div>
+  <div id="loading-list" class="spinner"></div>
+  <div id="empty" class="empty" hidden>No intake submissions yet. Once a client completes an intake you sent, it'll show up here.</div>
+  <div id="list"></div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const message = document.getElementById('message');
+  const loadingList = document.getElementById('loading-list');
+  const emptyEl = document.getElementById('empty');
+  const list = document.getElementById('list');
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  function humanize(key) {
+    return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+
+  function formatValue(val) {
+    if (val === null || val === undefined || val === '') return '—';
+    if (Array.isArray(val)) return val.length ? val.map(humanize).join(', ') : '—';
+    if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+    return String(val);
+  }
+
+  function renderSubmission(sub) {
+    const wrap = document.createElement('div');
+    wrap.className = 'submission';
+
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'submission-head';
+    const submittedDate = new Date(sub.submitted_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    head.innerHTML =
+      '<span><span class="name">' + escapeHtml(sub.client_name) + '</span> — <span class="email">' + escapeHtml(sub.client_email) + '</span></span>' +
+      '<span style="display:flex; align-items:center; gap:14px;"><span class="date">' + submittedDate + '</span><span class="chevron">›</span></span>';
+
+    const body = document.createElement('div');
+    body.className = 'submission-body';
+    body.hidden = true;
+
+    const formData = sub.form_data || {};
+    Object.keys(formData).forEach((key) => {
+      const row = document.createElement('div');
+      row.className = 'field-row';
+      row.innerHTML = '<div class="k"></div><div class="v"></div>';
+      row.querySelector('.k').textContent = humanize(key);
+      row.querySelector('.v').textContent = formatValue(formData[key]);
+      body.appendChild(row);
+    });
+
+    head.addEventListener('click', () => {
+      body.hidden = !body.hidden;
+      wrap.classList.toggle('open', !body.hidden);
+    });
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        checking.hidden = true;
+        shell.hidden = false;
+
+        sb.from('client_intake_submissions')
+          .select('*')
+          .order('submitted_at', { ascending: false })
+          .then(({ data: submissions, error: subError }) => {
+            loadingList.hidden = true;
+            if (subError) {
+              showError('Could not load submissions: ' + subError.message);
+              return;
+            }
+            if (!submissions || submissions.length === 0) {
+              emptyEl.hidden = false;
+              return;
+            }
+            submissions.forEach((sub) => list.appendChild(renderSubmission(sub)));
+          });
+      });
+  });
+})();
+</script>
+</body>
+</html>
