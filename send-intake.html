@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Send Intake — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .sending-as { color: var(--ink-mute); font-size: 0.88rem; margin: 0 0 26px; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 28px 30px 30px;
+  }
+  .card .hint { color: var(--ink-mute); font-size: 0.9rem; margin: 0 0 24px; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-glyph {
+    width: 44px; height: 44px; margin: 0 auto 16px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+  }
+  #result-card h2 { font-size: 1.35rem; text-align: center; margin: 0 0 6px; }
+  .result-summary { text-align: center; color: var(--ink-mute); font-size: 0.9rem; margin-bottom: 22px; }
+  .result-summary strong { color: var(--ink); }
+
+  .link-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .link-row input {
+    flex: 1;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    background: var(--sand);
+    color: var(--ink);
+  }
+  .link-row button {
+    font: inherit;
+    font-weight: 600;
+    background: var(--gold);
+    color: var(--navy);
+    border: none;
+    padding: 0 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: none;
+  }
+  .link-row button:hover { background: var(--gold-bright); }
+  .expires-note { font-size: 0.8rem; color: var(--ink-mute); margin: 0 0 26px; }
+
+  .field-row { display: flex; gap: 14px; }
+  @media (max-width: 480px) { .field-row { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Send Client Intake</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Send a client intake</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+  <p class="sending-as" id="sending-as"></p>
+
+  <div id="message" class="message error" role="alert" hidden></div>
+
+  <div id="form-card" class="card">
+    <p class="hint">Enter your client's name and email. We'll generate a secure, one-time link you can send them — they won't need any login of their own to complete it.</p>
+    <form id="intake-form" novalidate>
+      <div class="field">
+        <label for="client_name">Client full name</label>
+        <input type="text" id="client_name" name="client_name" required autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="client_email">Client email</label>
+        <input type="email" id="client_email" name="client_email" required autocomplete="off">
+      </div>
+      <button type="submit" class="btn-gold" id="submit-btn">Create intake link</button>
+    </form>
+  </div>
+
+  <div id="result-card" class="card" hidden>
+    <div class="result-glyph">✓</div>
+    <h2>Intake link ready</h2>
+    <p class="result-summary">For <strong id="result-name"></strong> — <span id="result-email"></span></p>
+    <div class="link-row">
+      <input type="text" id="result-link" readonly>
+      <button type="button" id="copy-btn">Copy</button>
+    </div>
+    <p class="expires-note" id="expires-note"></p>
+    <button type="button" class="btn-outline" id="send-another-btn" style="width:100%;">Send another intake</button>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const sendingAs = document.getElementById('sending-as');
+  const message = document.getElementById('message');
+  const formCard = document.getElementById('form-card');
+  const resultCard = document.getElementById('result-card');
+  const form = document.getElementById('intake-form');
+  const submitBtn = document.getElementById('submit-btn');
+
+  let practitionerId = null;
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    sb.from('profiles')
+      .select('role, full_name')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+          window.location.href = 'login.html';
+          return;
+        }
+
+        sb.from('practitioners')
+          .select('id, full_name')
+          .eq('user_id', data.session.user.id)
+          .single()
+          .then(({ data: practitioner, error: practError }) => {
+            checking.hidden = true;
+            shell.hidden = false;
+
+            if (practError || !practitioner) {
+              showError("Your account isn't linked to a practitioner profile yet — contact your administrator.");
+              formCard.hidden = true;
+              return;
+            }
+
+            practitionerId = practitioner.id;
+            sendingAs.textContent = 'Sending as ' + (practitioner.full_name || data.session.user.email);
+          });
+      });
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    message.hidden = true;
+
+    if (!form.reportValidity()) return;
+
+    const fullName = document.getElementById('client_name').value.trim();
+    const email = document.getElementById('client_email').value.trim().toLowerCase();
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating…';
+
+    sb.from('clients')
+      .select('id')
+      .eq('practitioner_id', practitionerId)
+      .eq('email', email)
+      .maybeSingle()
+      .then(({ data: existingClient, error: findError }) => {
+        if (findError) throw findError;
+        if (existingClient) return existingClient.id;
+
+        return sb.from('clients')
+          .insert({ practitioner_id: practitionerId, full_name: fullName, email: email })
+          .select('id')
+          .single()
+          .then(({ data: newClient, error: insertError }) => {
+            if (insertError) throw insertError;
+            return newClient.id;
+          });
+      })
+      .then((clientId) => {
+        return sb.from('intake_requests')
+          .insert({
+            practitioner_id: practitionerId,
+            client_id: clientId,
+            client_name: fullName,
+            client_email: email,
+          })
+          .select('token, expires_at')
+          .single();
+      })
+      .then(({ data: request, error: requestError }) => {
+        if (requestError) throw requestError;
+
+        const link = new URL('client-intake.html?token=' + encodeURIComponent(request.token), window.location.href).href;
+        document.getElementById('result-name').textContent = fullName;
+        document.getElementById('result-email').textContent = email;
+        document.getElementById('result-link').value = link;
+        document.getElementById('expires-note').textContent = 'Expires ' + new Date(request.expires_at).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' }) + ' if not completed before then.';
+
+        formCard.hidden = true;
+        resultCard.hidden = false;
+      })
+      .catch((err) => {
+        showError(err.message || 'Something went wrong creating the intake link. Try again.');
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create intake link';
+      });
+  });
+
+  document.getElementById('copy-btn').addEventListener('click', () => {
+    const input = document.getElementById('result-link');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => {
+      const btn = document.getElementById('copy-btn');
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = original; }, 1800);
+    });
+  });
+
+  document.getElementById('send-another-btn').addEventListener('click', () => {
+    form.reset();
+    resultCard.hidden = true;
+    formCard.hidden = false;
+    document.getElementById('client_name').focus();
+  });
+})();
+</script>
+</body>
+</html>
