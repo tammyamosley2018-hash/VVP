@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
 <style>
   :root {
     --navy: #0B1B33;
@@ -699,8 +700,6 @@
 
 <script>
 (function () {
-  const SUPABASE_URL = "https://yvolmpnoqbzaykbbmxgb.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2b2xtcG5vcWJ6YXlrYmJteGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMjU4NTIsImV4cCI6MjA5OTkwMTg1Mn0.yqP4SdlRKKjL63BxO3X-lPnsOj4kF3cOi1s8r-2rb2Y";
   const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const loading = document.getElementById('loading');

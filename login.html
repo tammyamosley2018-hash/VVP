@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Log In — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-cream.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 60px 20px 80px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 30px 34px;
+  }
+  .card h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  .card .hint { color: var(--ink-mute); font-size: 0.9rem; margin: 0 0 26px; }
+  .footnote {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--ink-mute);
+    margin-top: 18px;
+  }
+  .spinner {
+    width: 28px; height: 28px; margin: 40px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Portal Login</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <div id="checking" class="spinner"></div>
+
+  <div id="card" class="card" hidden>
+    <h1>Log in to your portal</h1>
+    <p class="hint">Use the email and password your practitioner or administrator set up for you.</p>
+
+    <div id="message" class="message error" role="alert" hidden></div>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-gold" id="submit-btn">Log in</button>
+    </form>
+
+    <p class="footnote">Don't have login access yet? Contact your practitioner or administrator.</p>
+  </div>
+
+  <div id="pending-role" class="card" hidden>
+    <h1>You're logged in</h1>
+    <p class="hint" id="pending-role-text"></p>
+    <button type="button" class="btn-outline" id="sign-out-btn">Sign out</button>
+  </div>
+
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const checking = document.getElementById('checking');
+  const card = document.getElementById('card');
+  const pendingRole = document.getElementById('pending-role');
+  const pendingRoleText = document.getElementById('pending-role-text');
+  const message = document.getElementById('message');
+  const form = document.getElementById('login-form');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  async function routeByRole(userId) {
+    const { data: profile, error } = await sb
+      .from('profiles')
+      .select('role, full_name')
+      .eq('id', userId)
+      .single();
+
+    checking.hidden = true;
+
+    if (error || !profile) {
+      card.hidden = false;
+      showError("We couldn't load your account details. Try logging in again, or contact your administrator.");
+      return;
+    }
+
+    if (profile.role === 'practitioner' || profile.role === 'admin') {
+      window.location.href = 'practitioner-dashboard.html';
+      return;
+    }
+
+    pendingRole.hidden = false;
+    pendingRoleText.textContent = profile.role === 'client'
+      ? "The client portal isn't available yet — check back soon."
+      : "There's no portal set up for your account type yet.";
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      routeByRole(data.session.user.id);
+    } else {
+      checking.hidden = true;
+      card.hidden = false;
+    }
+  });
+
+  document.getElementById('sign-out-btn').addEventListener('click', () => {
+    sb.auth.signOut().then(() => window.location.reload());
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    message.hidden = true;
+
+    if (!form.reportValidity()) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging in…';
+
+    sb.auth.signInWithPassword({
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value,
+    }).then(({ data, error }) => {
+      if (error) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Log in';
+        showError(error.message || 'Something went wrong logging in. Try again.');
+        return;
+      }
+      card.hidden = true;
+      checking.hidden = false;
+      routeByRole(data.user.id);
+    });
+  });
+})();
+</script>
+</body>
+</html>
