@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Client Intake — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-cream.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -53,17 +54,15 @@
 
   /* ---------- Header ---------- */
   header.site {
-    background: var(--navy);
+    background: #06091B;
     color: var(--parchment);
-    padding: 18px 24px;
+    padding: 14px 24px;
     display: flex;
     align-items: center;
     gap: 14px;
     border-bottom: 3px solid var(--gold);
   }
-  .mark { width: 40px; height: 40px; flex: none; }
-  .mark path, .mark polygon { stroke: var(--gold); }
-  .mark .v { fill: var(--gold); }
+  .mark { width: 44px; height: 44px; flex: none; border-radius: 50%; display: block; }
   header.site .word {
     display: flex;
     flex-direction: column;
@@ -385,11 +384,7 @@
 <body>
 
 <header class="site">
-  <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
-    <polygon points="24,4 42,40 6,40" fill="none" stroke-width="2"></polygon>
-    <polygon points="24,4 33,40 15,40" fill="none" stroke-width="1"></polygon>
-    <polygon points="24,16 30,40 18,40" class="v" stroke="none"></polygon>
-  </svg>
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
   <div class="word">
     <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
     <span class="subline">Client Intake</span>
