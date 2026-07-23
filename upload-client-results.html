@@ -85,18 +85,54 @@
   }
 
   .center-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 6px; }
-  .center-card { border-radius: 10px; padding: 12px; border: 1px solid var(--line); border-top: 4px solid var(--accent, var(--gold)); background: var(--parchment); }
-  .center-card .label { font-weight: 600; font-size: 0.88rem; margin-bottom: 8px; }
-  .center-card input { width: 100%; font: inherit; font-size: 0.82rem; padding: 6px 8px; margin-bottom: 6px; border: 1.5px solid var(--line); border-radius: 6px; background: #fff; }
-  .center-card input::placeholder { color: var(--ink-mute); opacity: 0.7; }
+  .center-card { border-radius: 10px; padding: 14px; border: 1px solid var(--line); border-top: 4px solid var(--accent, var(--gold)); background: var(--parchment); }
+  .center-card .label { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px; }
+  .center-card .blurb { font-size: 0.76rem; color: var(--ink-mute); line-height: 1.4; margin-bottom: 12px; min-height: 3.2em; }
 
   .layer-row { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
-  .layer-row .layer-label { font-weight: 600; margin-bottom: 10px; }
-  .layer-row .layer-fields { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
-  @media (max-width: 620px) { .layer-row .layer-fields { grid-template-columns: 1fr; } }
-  .layer-row input { width: 100%; font: inherit; font-size: 0.85rem; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--parchment); }
-  .layer-row input:focus { border-color: var(--crystal); background: #fff; }
-  .layer-row .layer-fields label { display: block; font-size: 0.72rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .layer-row .layer-label { font-weight: 600; margin-bottom: 2px; }
+  .layer-row .layer-blurb { font-size: 0.78rem; color: var(--ink-mute); margin-bottom: 10px; }
+  .layer-row input[type="text"] { width: 100%; font: inherit; font-size: 0.85rem; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--parchment); margin-bottom: 10px; }
+  .layer-row input[type="text"]:focus { border-color: var(--crystal); background: #fff; }
+  .layer-row .slider-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 480px) { .layer-row .slider-pair { grid-template-columns: 1fr; } }
+
+  /* ── Reading sliders (shared by Energy Centers + Biofield) ── */
+  .slider-field { margin-bottom: 4px; }
+  .slider-field-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 0.72rem; color: var(--ink-mute); text-transform: uppercase; letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .slider-field-head .val { font-family: 'Fraunces', serif; font-size: 0.95rem; color: var(--ink); text-transform: none; letter-spacing: 0; }
+  input[type="range"].reading-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+    outline: none;
+    margin: 10px 0;
+  }
+  input[type="range"].reading-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--gold);
+    cursor: pointer;
+  }
+  input[type="range"].reading-slider::-moz-range-thumb {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px var(--gold);
+    cursor: pointer;
+  }
+  input[type="range"].reading-slider:focus-visible::-webkit-slider-thumb { outline: 3px solid var(--crystal); outline-offset: 2px; }
 
   .check-item { display: flex; align-items: flex-start; gap: 10px; font-size: 0.92rem; margin-bottom: 10px; }
   .check-item input { margin-top: 3px; flex: none; width: 18px; height: 18px; accent-color: var(--gold); }
@@ -184,13 +220,14 @@
 
     <section class="card">
       <div class="eyebrow"><h2>Energy Center Alignment</h2></div>
-      <p class="hint">Baseline and reassessment for each center.</p>
+      <p class="hint">Baseline and reassessment for each center, on a 0–100 alignment scale.</p>
       <div class="center-grid" id="energy-centers"></div>
     </section>
 
     <section class="card">
       <div class="eyebrow"><h2>Biofield Scan Overview</h2></div>
-      <p class="hint">What was found in each layer, plus baseline and reassessment.</p>
+      <p class="hint">What was found in each layer, plus baseline and reassessment on a 0–100 scale.</p>
+      <img src="assets/images/biofield-aura-figure.png" alt="Illustration of the biofield's layered aura extending outward from the body" style="display:block; max-width:220px; margin: 0 auto 20px;">
       <div id="biofield-layers"></div>
       <div class="field" style="margin-top:16px;">
         <label for="practitioner_summary">Practitioner summary</label>
@@ -312,24 +349,38 @@
   ];
 
   const ENERGY_CENTERS = [
-    { key: 'crown', label: 'Crown', color: '#7B5FB8' },
-    { key: 'third_eye', label: 'Third Eye', color: '#4B5FC9' },
-    { key: 'throat', label: 'Throat', color: '#3B8FC9' },
-    { key: 'heart', label: 'Heart', color: '#4FA36B' },
-    { key: 'solar_plexus', label: 'Solar Plexus', color: '#D9A02B' },
-    { key: 'sacral', label: 'Sacral', color: '#D9772B' },
-    { key: 'root', label: 'Root', color: '#C24B4B' },
+    { key: 'crown', label: 'Crown', color: '#7B5FB8', blurb: 'Connection to higher awareness, purpose, and spiritual alignment.' },
+    { key: 'third_eye', label: 'Third Eye', color: '#4B5FC9', blurb: 'Intuition, insight, and inner clarity.' },
+    { key: 'throat', label: 'Throat', color: '#3B8FC9', blurb: 'Communication, self-expression, and speaking one’s truth.' },
+    { key: 'heart', label: 'Heart', color: '#4FA36B', blurb: 'Love, connection, and emotional balance.' },
+    { key: 'solar_plexus', label: 'Solar Plexus', color: '#D9A02B', blurb: 'Personal power, confidence, and will.' },
+    { key: 'sacral', label: 'Sacral', color: '#D9772B', blurb: 'Creativity, emotion, and relational flow.' },
+    { key: 'root', label: 'Root', color: '#C24B4B', blurb: 'Grounding, security, and physical vitality.' },
   ];
 
   const BIOFIELD_LAYERS = [
-    { key: 'physical_etheric', label: 'Physical / Etheric Layer', hint: 'Vital energy, structure, embodiment' },
-    { key: 'emotional', label: 'Emotional Layer', hint: 'Feelings, balance, flow' },
-    { key: 'mental', label: 'Mental Layer', hint: 'Thoughts, beliefs, clarity' },
-    { key: 'astral', label: 'Astral Layer', hint: 'Imagination, connection, experience' },
-    { key: 'etheric', label: 'Etheric Layer', hint: 'Life patterns, habits, tendencies' },
-    { key: 'celestial', label: 'Celestial Layer', hint: 'Higher connection, purpose, guidance' },
-    { key: 'ketheric', label: 'Ketheric Layer', hint: 'Soul essence, unity, divine alignment' },
+    { key: 'physical', label: 'Physical Layer', hint: 'Structure, vitality, and bioelectric charge in the body.', range: '1,000–10,000 Å' },
+    { key: 'etheric', label: 'Etheric Layer', hint: 'Flow of life force through the body’s energetic circuitry.', range: '10,000–14,000 Å' },
+    { key: 'emotional', label: 'Emotional Layer', hint: 'Feelings, emotional resonance, and looping patterns.', range: '14,000–18,000 Å' },
+    { key: 'mental', label: 'Mental Layer', hint: 'Thoughts, beliefs, and clarity of mind.', range: '18,000–28,000 Å' },
+    { key: 'astral', label: 'Astral Layer', hint: 'Inherited resonance and lineage memory.', range: '28,000–35,000 Å' },
+    { key: 'celestial_ketheric', label: 'Celestial / Ketheric Layer', hint: 'Source awareness, higher connection, and universal alignment.', range: '49,000–190,000 Å' },
   ];
+
+  function sliderFieldHtml(id, label) {
+    return (
+      '<div class="slider-field">' +
+        '<div class="slider-field-head"><span>' + label + '</span><span class="val" id="' + id + '_val">50</span></div>' +
+        '<input type="range" class="reading-slider" id="' + id + '" min="0" max="100" value="50">' +
+      '</div>'
+    );
+  }
+
+  function wireSlider(id) {
+    const el = document.getElementById(id);
+    const out = document.getElementById(id + '_val');
+    el.addEventListener('input', () => { out.textContent = el.value; });
+  }
 
   function buildFieldResponseRows() {
     const tbody = document.getElementById('field-response-body');
@@ -353,9 +404,12 @@
       card.style.setProperty('--accent', center.color);
       card.innerHTML =
         '<div class="label">' + center.label + '</div>' +
-        '<input type="text" id="ec_' + center.key + '_baseline" placeholder="Baseline">' +
-        '<input type="text" id="ec_' + center.key + '_reassessment" placeholder="Reassessment">';
+        '<div class="blurb">' + center.blurb + '</div>' +
+        sliderFieldHtml('ec_' + center.key + '_baseline', 'Baseline') +
+        sliderFieldHtml('ec_' + center.key + '_reassessment', 'Reassessment');
       wrap.appendChild(card);
+      wireSlider('ec_' + center.key + '_baseline');
+      wireSlider('ec_' + center.key + '_reassessment');
     });
   }
 
@@ -365,13 +419,17 @@
       const row = document.createElement('div');
       row.className = 'layer-row';
       row.innerHTML =
-        '<div class="layer-label">' + layer.label + ' <span style="font-weight:400; color:var(--ink-mute); font-size:0.8rem;">— ' + layer.hint + '</span></div>' +
-        '<div class="layer-fields">' +
-          '<div><label>What we found</label><input type="text" id="bf_' + layer.key + '_found"></div>' +
-          '<div><label>Baseline</label><input type="text" id="bf_' + layer.key + '_baseline"></div>' +
-          '<div><label>Reassessment</label><input type="text" id="bf_' + layer.key + '_reassessment"></div>' +
+        '<div class="layer-label">' + layer.label + ' <span style="font-weight:400; color:var(--gold); font-size:0.72rem;">· ' + layer.range + '</span></div>' +
+        '<div class="layer-blurb">' + layer.hint + '</div>' +
+        '<label style="display:block; font-size:0.72rem; color:var(--ink-mute); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">What we found</label>' +
+        '<input type="text" id="bf_' + layer.key + '_found">' +
+        '<div class="slider-pair">' +
+          sliderFieldHtml('bf_' + layer.key + '_baseline', 'Baseline') +
+          sliderFieldHtml('bf_' + layer.key + '_reassessment', 'Reassessment') +
         '</div>';
       wrap.appendChild(row);
+      wireSlider('bf_' + layer.key + '_baseline');
+      wireSlider('bf_' + layer.key + '_reassessment');
     });
   }
 
@@ -380,6 +438,7 @@
   buildBiofieldLayers();
 
   const val = (id) => document.getElementById(id).value.trim();
+  const num = (id) => Number(document.getElementById(id).value);
   const checked = (id) => document.getElementById(id).checked;
 
   function collectResultData() {
@@ -396,8 +455,8 @@
     const energyCenters = {};
     ENERGY_CENTERS.forEach((c) => {
       energyCenters[c.key] = {
-        baseline: val('ec_' + c.key + '_baseline'),
-        reassessment: val('ec_' + c.key + '_reassessment'),
+        baseline: num('ec_' + c.key + '_baseline'),
+        reassessment: num('ec_' + c.key + '_reassessment'),
       };
     });
 
@@ -405,8 +464,8 @@
     BIOFIELD_LAYERS.forEach((l) => {
       biofield[l.key] = {
         what_we_found: val('bf_' + l.key + '_found'),
-        baseline: val('bf_' + l.key + '_baseline'),
-        reassessment: val('bf_' + l.key + '_reassessment'),
+        baseline: num('bf_' + l.key + '_baseline'),
+        reassessment: num('bf_' + l.key + '_reassessment'),
       };
     });
 

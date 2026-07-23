@@ -43,6 +43,25 @@
   }
   .row { display: grid; grid-template-columns: 200px 1fr; gap: 10px; padding: 6px 0; font-size: 0.9rem; border-bottom: 1px solid var(--line); }
   @media (max-width: 560px) { .row { grid-template-columns: 1fr; gap: 2px; } }
+
+  /* ── Dumbbell chart (before → after per item) ── */
+  .dumbbell-legend {
+    display: flex; gap: 18px; align-items: center;
+    font-size: 0.78rem; color: var(--ink-mute); margin-bottom: 14px;
+  }
+  .dumbbell-legend .key { display: flex; align-items: center; gap: 6px; }
+  .dumbbell-legend .swatch { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .dumbbell-row {
+    display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px;
+    padding: 7px 0;
+  }
+  @media (max-width: 560px) { .dumbbell-row { grid-template-columns: 1fr; gap: 4px; } }
+  .dumbbell-row .dlabel { font-size: 0.85rem; color: var(--ink); font-weight: 600; }
+  .dumbbell-row svg { width: 100%; height: 28px; display: block; overflow: visible; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
   .row:last-child { border-bottom: none; }
   .row .k { font-weight: 600; color: var(--ink-mute); }
   .row .v { color: var(--ink); white-space: pre-wrap; }
@@ -95,13 +114,99 @@
     { key: 'root', label: 'Root' },
   ];
   const BIOFIELD_LAYERS = [
-    { key: 'physical_etheric', label: 'Physical / Etheric Layer' }, { key: 'emotional', label: 'Emotional Layer' },
-    { key: 'mental', label: 'Mental Layer' }, { key: 'astral', label: 'Astral Layer' },
-    { key: 'etheric', label: 'Etheric Layer' }, { key: 'celestial', label: 'Celestial Layer' },
-    { key: 'ketheric', label: 'Ketheric Layer' },
+    { key: 'physical', label: 'Physical' },
+    { key: 'etheric', label: 'Etheric' },
+    { key: 'emotional', label: 'Emotional' },
+    { key: 'mental', label: 'Mental' },
+    { key: 'astral', label: 'Astral' },
+    { key: 'celestial_ketheric', label: 'Celestial / Ketheric' },
   ];
 
+  const DUMBBELL_BASELINE_COLOR = '#D4A93A';
+  const DUMBBELL_REASSESSMENT_COLOR = '#B8901E';
+
   const hasText = (v) => typeof v === 'string' && v.trim() !== '';
+  const hasNum = (v) => typeof v === 'number' && !Number.isNaN(v);
+
+  function dumbbellChart(container, items) {
+    const legend = document.createElement('div');
+    legend.className = 'dumbbell-legend';
+    legend.innerHTML =
+      '<span class="key"><span class="swatch" style="background:' + DUMBBELL_BASELINE_COLOR + '"></span>Baseline</span>' +
+      '<span class="key"><span class="swatch" style="background:' + DUMBBELL_REASSESSMENT_COLOR + '"></span>Reassessment</span>';
+    container.appendChild(legend);
+
+    const W = 260, PAD = 14, H = 28;
+    const scaleX = (v) => PAD + (v / 100) * (W - PAD * 2);
+
+    items.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'dumbbell-row';
+
+      const bx = scaleX(item.baseline);
+      const rx = scaleX(item.reassessment);
+      const midY = H / 2;
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', `${item.label}: baseline ${item.baseline}, reassessment ${item.reassessment}, out of 100`);
+
+      const gridline = document.createElementNS(svgNS, 'line');
+      gridline.setAttribute('x1', PAD); gridline.setAttribute('x2', W - PAD);
+      gridline.setAttribute('y1', midY); gridline.setAttribute('y2', midY);
+      gridline.setAttribute('stroke', 'var(--line)');
+      gridline.setAttribute('stroke-width', '1');
+      svg.appendChild(gridline);
+
+      const connector = document.createElementNS(svgNS, 'line');
+      connector.setAttribute('x1', bx); connector.setAttribute('x2', rx);
+      connector.setAttribute('y1', midY); connector.setAttribute('y2', midY);
+      connector.setAttribute('stroke', DUMBBELL_REASSESSMENT_COLOR);
+      connector.setAttribute('stroke-width', '2');
+      svg.appendChild(connector);
+
+      [
+        { x: bx, color: DUMBBELL_BASELINE_COLOR, value: item.baseline, labelAbove: bx <= rx },
+        { x: rx, color: DUMBBELL_REASSESSMENT_COLOR, value: item.reassessment, labelAbove: rx < bx },
+      ].forEach((pt) => {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('cx', pt.x); dot.setAttribute('cy', midY); dot.setAttribute('r', '5');
+        dot.setAttribute('fill', pt.color);
+        dot.setAttribute('stroke', 'var(--parchment)');
+        dot.setAttribute('stroke-width', '2');
+        const title = document.createElementNS(svgNS, 'title');
+        title.textContent = String(pt.value);
+        dot.appendChild(title);
+        svg.appendChild(dot);
+
+        const label = document.createElementNS(svgNS, 'text');
+        label.setAttribute('x', pt.x);
+        label.setAttribute('y', pt.labelAbove ? midY - 9 : midY + 17);
+        label.setAttribute('text-anchor', 'middle');
+        label.setAttribute('font-size', '9');
+        label.setAttribute('font-family', 'DM Mono, monospace');
+        label.setAttribute('fill', 'var(--ink-mute)');
+        label.textContent = pt.value;
+        svg.appendChild(label);
+      });
+
+      row.innerHTML = '<div class="dlabel"></div>';
+      row.querySelector('.dlabel').textContent = item.label;
+      row.appendChild(svg);
+      container.appendChild(row);
+    });
+
+    // Accessible table twin (visually hidden, screen-reader reachable)
+    const table = document.createElement('table');
+    table.className = 'sr-only';
+    table.innerHTML =
+      '<caption>Baseline and reassessment readings, 0–100 scale</caption>' +
+      '<thead><tr><th>Item</th><th>Baseline</th><th>Reassessment</th></tr></thead>' +
+      '<tbody>' + items.map(i => `<tr><td>${i.label}</td><td>${i.baseline}</td><td>${i.reassessment}</td></tr>`).join('') + '</tbody>';
+    container.appendChild(table);
+  }
 
   function row(container, label, value) {
     if (!hasText(value)) return;
@@ -151,40 +256,29 @@
 
   function renderEnergyCenters(body, data) {
     if (!data || !data.energy_centers) return;
-    const withContent = ENERGY_CENTERS.filter(c => {
-      const d = data.energy_centers[c.key];
-      return d && (hasText(d.baseline) || hasText(d.reassessment));
-    });
-    if (withContent.length === 0) return;
+    const items = ENERGY_CENTERS
+      .map(c => ({ label: c.label, ...data.energy_centers[c.key] }))
+      .filter(c => hasNum(c.baseline) && hasNum(c.reassessment));
+    if (items.length === 0) return;
 
     const sec = subSection(body, 'Energy Center Alignment');
-    withContent.forEach(c => {
-      const d = data.energy_centers[c.key];
-      const parts = [];
-      if (hasText(d.baseline)) parts.push('Baseline: ' + d.baseline);
-      if (hasText(d.reassessment)) parts.push('Reassessment: ' + d.reassessment);
-      row(sec, c.label, parts.join(' · '));
-    });
+    dumbbellChart(sec, items);
   }
 
   function renderBiofield(body, data) {
     if (!data) return;
-    const withContent = BIOFIELD_LAYERS.filter(l => {
-      const d = data.biofield && data.biofield[l.key];
-      return d && (hasText(d.what_we_found) || hasText(d.baseline) || hasText(d.reassessment));
-    });
+    const chartItems = BIOFIELD_LAYERS
+      .map(l => ({ label: l.label, key: l.key, ...(data.biofield && data.biofield[l.key]) }))
+      .filter(l => hasNum(l.baseline) && hasNum(l.reassessment));
+    const foundRows = BIOFIELD_LAYERS
+      .map(l => ({ label: l.label, found: data.biofield && data.biofield[l.key] && data.biofield[l.key].what_we_found }))
+      .filter(l => hasText(l.found));
     const hasSummary = hasText(data.practitioner_summary) || hasText(data.recommended_next_steps);
-    if (withContent.length === 0 && !hasSummary) return;
+    if (chartItems.length === 0 && foundRows.length === 0 && !hasSummary) return;
 
     const sec = subSection(body, 'Biofield Scan Overview');
-    withContent.forEach(l => {
-      const d = data.biofield[l.key];
-      const parts = [];
-      if (hasText(d.what_we_found)) parts.push(d.what_we_found);
-      if (hasText(d.baseline)) parts.push('Baseline: ' + d.baseline);
-      if (hasText(d.reassessment)) parts.push('Reassessment: ' + d.reassessment);
-      row(sec, l.label, parts.join(' · '));
-    });
+    if (chartItems.length > 0) dumbbellChart(sec, chartItems);
+    foundRows.forEach(r => row(sec, r.label + ' — what we found', r.found));
     row(sec, 'Practitioner summary', data.practitioner_summary);
     row(sec, 'Recommended next steps', data.recommended_next_steps);
   }
