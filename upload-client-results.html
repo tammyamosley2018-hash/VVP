@@ -226,7 +226,7 @@
 
     <section class="card">
       <div class="eyebrow"><h2>Biofield Scan Overview</h2></div>
-      <p class="hint">What was found in each layer, plus baseline and reassessment on a 0–100 scale.</p>
+      <p class="hint">What was found in each layer, plus baseline and reassessment in angstroms (Å), scaled to each layer's real range.</p>
       <img src="assets/images/biofield-aura-figure.png" alt="Illustration of the biofield's layered aura extending outward from the body" style="display:block; max-width:220px; margin: 0 auto 20px;">
       <div id="biofield-layers"></div>
       <div class="field" style="margin-top:16px;">
@@ -359,19 +359,23 @@
   ];
 
   const BIOFIELD_LAYERS = [
-    { key: 'physical', label: 'Physical Layer', hint: 'Structure, vitality, and bioelectric charge in the body.', range: '1,000–10,000 Å' },
-    { key: 'etheric', label: 'Etheric Layer', hint: 'Flow of life force through the body’s energetic circuitry.', range: '10,000–14,000 Å' },
-    { key: 'emotional', label: 'Emotional Layer', hint: 'Feelings, emotional resonance, and looping patterns.', range: '14,000–18,000 Å' },
-    { key: 'mental', label: 'Mental Layer', hint: 'Thoughts, beliefs, and clarity of mind.', range: '18,000–28,000 Å' },
-    { key: 'astral', label: 'Astral Layer', hint: 'Inherited resonance and lineage memory.', range: '28,000–35,000 Å' },
-    { key: 'celestial_ketheric', label: 'Celestial / Ketheric Layer', hint: 'Source awareness, higher connection, and universal alignment.', range: '49,000–190,000 Å' },
+    { key: 'physical', label: 'Physical Layer', hint: 'Structure, vitality, and bioelectric charge in the body.', min: 1000, max: 10000 },
+    { key: 'etheric', label: 'Etheric Layer', hint: 'Flow of life force through the body’s energetic circuitry.', min: 10000, max: 14000 },
+    { key: 'emotional', label: 'Emotional Layer', hint: 'Feelings, emotional resonance, and looping patterns.', min: 14000, max: 18000 },
+    { key: 'mental', label: 'Mental Layer', hint: 'Thoughts, beliefs, and clarity of mind.', min: 18000, max: 28000 },
+    { key: 'astral', label: 'Astral Layer', hint: 'Inherited resonance and lineage memory.', min: 28000, max: 35000 },
+    { key: 'celestial_ketheric', label: 'Celestial / Ketheric Layer', hint: 'Source awareness, higher connection, and universal alignment.', min: 49000, max: 190000 },
   ];
+  BIOFIELD_LAYERS.forEach((l) => { l.range = l.min.toLocaleString() + '–' + l.max.toLocaleString() + ' Å'; });
 
-  function sliderFieldHtml(id, label) {
+  function sliderFieldHtml(id, label, min, max) {
+    min = min === undefined ? 0 : min;
+    max = max === undefined ? 100 : max;
+    const mid = Math.round((min + max) / 2);
     return (
       '<div class="slider-field">' +
-        '<div class="slider-field-head"><span>' + label + '</span><span class="val" id="' + id + '_val">50</span></div>' +
-        '<input type="range" class="reading-slider" id="' + id + '" min="0" max="100" value="50">' +
+        '<div class="slider-field-head"><span>' + label + '</span><span class="val" id="' + id + '_val">' + mid.toLocaleString() + '</span></div>' +
+        '<input type="range" class="reading-slider" id="' + id + '" min="' + min + '" max="' + max + '" value="' + mid + '">' +
       '</div>'
     );
   }
@@ -379,7 +383,7 @@
   function wireSlider(id) {
     const el = document.getElementById(id);
     const out = document.getElementById(id + '_val');
-    el.addEventListener('input', () => { out.textContent = el.value; });
+    el.addEventListener('input', () => { out.textContent = Number(el.value).toLocaleString(); });
   }
 
   function buildFieldResponseRows() {
@@ -424,8 +428,8 @@
         '<label style="display:block; font-size:0.72rem; color:var(--ink-mute); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">What we found</label>' +
         '<input type="text" id="bf_' + layer.key + '_found">' +
         '<div class="slider-pair">' +
-          sliderFieldHtml('bf_' + layer.key + '_baseline', 'Baseline') +
-          sliderFieldHtml('bf_' + layer.key + '_reassessment', 'Reassessment') +
+          sliderFieldHtml('bf_' + layer.key + '_baseline', 'Baseline', layer.min, layer.max) +
+          sliderFieldHtml('bf_' + layer.key + '_reassessment', 'Reassessment', layer.min, layer.max) +
         '</div>';
       wrap.appendChild(row);
       wireSlider('bf_' + layer.key + '_baseline');

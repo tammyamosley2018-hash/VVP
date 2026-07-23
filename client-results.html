@@ -114,12 +114,12 @@
     { key: 'root', label: 'Root' },
   ];
   const BIOFIELD_LAYERS = [
-    { key: 'physical', label: 'Physical' },
-    { key: 'etheric', label: 'Etheric' },
-    { key: 'emotional', label: 'Emotional' },
-    { key: 'mental', label: 'Mental' },
-    { key: 'astral', label: 'Astral' },
-    { key: 'celestial_ketheric', label: 'Celestial / Ketheric' },
+    { key: 'physical', label: 'Physical', min: 1000, max: 10000 },
+    { key: 'etheric', label: 'Etheric', min: 10000, max: 14000 },
+    { key: 'emotional', label: 'Emotional', min: 14000, max: 18000 },
+    { key: 'mental', label: 'Mental', min: 18000, max: 28000 },
+    { key: 'astral', label: 'Astral', min: 28000, max: 35000 },
+    { key: 'celestial_ketheric', label: 'Celestial / Ketheric', min: 49000, max: 190000 },
   ];
 
   const DUMBBELL_BASELINE_COLOR = '#D4A93A';
@@ -137,9 +137,15 @@
     container.appendChild(legend);
 
     const W = 260, PAD = 14, H = 28;
-    const scaleX = (v) => PAD + (v / 100) * (W - PAD * 2);
 
     items.forEach((item) => {
+      const min = item.min === undefined ? 0 : item.min;
+      const max = item.max === undefined ? 100 : item.max;
+      const scaleX = (v) => PAD + ((v - min) / (max - min)) * (W - PAD * 2);
+      const fmt = (v) => v.toLocaleString();
+      const unit = item.min === undefined ? '' : ' Å';
+      const scaleLabel = item.min === undefined ? 'out of 100' : `within this layer's ${fmt(min)}–${fmt(max)} Å range`;
+
       const row = document.createElement('div');
       row.className = 'dumbbell-row';
 
@@ -151,7 +157,7 @@
       const svg = document.createElementNS(svgNS, 'svg');
       svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
       svg.setAttribute('role', 'img');
-      svg.setAttribute('aria-label', `${item.label}: baseline ${item.baseline}, reassessment ${item.reassessment}, out of 100`);
+      svg.setAttribute('aria-label', `${item.label}: baseline ${fmt(item.baseline)}${unit}, reassessment ${fmt(item.reassessment)}${unit}, ${scaleLabel}`);
 
       const gridline = document.createElementNS(svgNS, 'line');
       gridline.setAttribute('x1', PAD); gridline.setAttribute('x2', W - PAD);
@@ -177,7 +183,7 @@
         dot.setAttribute('stroke', 'var(--parchment)');
         dot.setAttribute('stroke-width', '2');
         const title = document.createElementNS(svgNS, 'title');
-        title.textContent = String(pt.value);
+        title.textContent = fmt(pt.value) + unit;
         dot.appendChild(title);
         svg.appendChild(dot);
 
@@ -188,7 +194,7 @@
         label.setAttribute('font-size', '9');
         label.setAttribute('font-family', 'DM Mono, monospace');
         label.setAttribute('fill', 'var(--ink-mute)');
-        label.textContent = pt.value;
+        label.textContent = fmt(pt.value);
         svg.appendChild(label);
       });
 
@@ -199,12 +205,13 @@
     });
 
     // Accessible table twin (visually hidden, screen-reader reachable)
+    const isAngstrom = items.length > 0 && items[0].min !== undefined;
     const table = document.createElement('table');
     table.className = 'sr-only';
     table.innerHTML =
-      '<caption>Baseline and reassessment readings, 0–100 scale</caption>' +
-      '<thead><tr><th>Item</th><th>Baseline</th><th>Reassessment</th></tr></thead>' +
-      '<tbody>' + items.map(i => `<tr><td>${i.label}</td><td>${i.baseline}</td><td>${i.reassessment}</td></tr>`).join('') + '</tbody>';
+      '<caption>Baseline and reassessment readings' + (isAngstrom ? ', in angstroms (Å) within each item\'s own range' : ', 0–100 scale') + '</caption>' +
+      '<thead><tr><th>Item</th><th>Baseline</th><th>Reassessment</th>' + (isAngstrom ? '<th>Range</th>' : '') + '</tr></thead>' +
+      '<tbody>' + items.map(i => `<tr><td>${i.label}</td><td>${i.baseline.toLocaleString()}</td><td>${i.reassessment.toLocaleString()}</td>` + (isAngstrom ? `<td>${i.min.toLocaleString()}–${i.max.toLocaleString()} Å</td>` : '') + `</tr>`).join('') + '</tbody>';
     container.appendChild(table);
   }
 
@@ -268,7 +275,7 @@
   function renderBiofield(body, data) {
     if (!data) return;
     const chartItems = BIOFIELD_LAYERS
-      .map(l => ({ label: l.label, key: l.key, ...(data.biofield && data.biofield[l.key]) }))
+      .map(l => ({ label: l.label, key: l.key, min: l.min, max: l.max, ...(data.biofield && data.biofield[l.key]) }))
       .filter(l => hasNum(l.baseline) && hasNum(l.reassessment));
     const foundRows = BIOFIELD_LAYERS
       .map(l => ({ label: l.label, found: data.biofield && data.biofield[l.key] && data.biofield[l.key].what_we_found }))
