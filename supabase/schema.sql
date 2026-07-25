@@ -306,3 +306,48 @@ end;
 $$;
 
 grant execute on function submit_client_intake(text, jsonb) to anon, authenticated;
+
+-- ============================================================
+-- N8N NOTIFICATION ON NEW INTAKE SUBMISSION
+-- Fires after a client_intake_submissions row lands (i.e. after Supabase
+-- has already durably stored it — n8n is notified, never the first stop).
+-- Resolves the practitioner's email/name server-side and POSTs a clean
+-- payload to n8n's webhook, so n8n needs no Supabase credentials at all.
+-- pg_net's http_post is async/fire-and-forget: a slow or down n8n can
+-- never block or fail the insert itself.
+-- ============================================================
+
+create extension if not exists pg_net;
+
+create or replace function notify_n8n_on_intake_submission()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_practitioner practitioners%rowtype;
+begin
+  select * into v_practitioner from practitioners where id = new.practitioner_id;
+
+  perform net.http_post(
+    url := 'https://deft-bison-84.nbg1-3.instapods.app/webhook/c56b83b4-068b-4e83-add8-d46cda55ab5a',
+    headers := jsonb_build_object('Content-Type', 'application/json'),
+    body := jsonb_build_object(
+      'submission_id', new.id,
+      'practitioner_email', v_practitioner.email,
+      'practitioner_name', v_practitioner.full_name,
+      'client_name', new.client_name,
+      'client_email', new.client_email,
+      'submitted_at', new.submitted_at
+    )
+  );
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_intake_submission_notify_n8n on client_intake_submissions;
+create trigger on_intake_submission_notify_n8n
+  after insert on client_intake_submissions
+  for each row execute function notify_n8n_on_intake_submission();
