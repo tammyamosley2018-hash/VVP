@@ -335,10 +335,12 @@ begin
     headers := jsonb_build_object('Content-Type', 'application/json'),
     body := jsonb_build_object(
       'submission_id', new.id,
+      'practitioner_id', new.practitioner_id,
       'practitioner_email', v_practitioner.email,
       'practitioner_name', v_practitioner.full_name,
       'client_name', new.client_name,
       'client_email', new.client_email,
+      'client_phone', new.form_data ->> 'phone',
       'submitted_at', new.submitted_at
     )
   );
