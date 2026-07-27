@@ -61,7 +61,31 @@
   .profile-chip .who .role { font-size: 0.72rem; color: var(--crystal-pale); text-transform: uppercase; letter-spacing: 0.05em; }
   .signout-link { background: none; border: none; color: var(--crystal-pale); font: inherit; font-size: 0.82rem; cursor: pointer; text-decoration: underline; }
 
-  .dash-content { padding: 26px 28px 70px; max-width: 1180px; }
+  .dash-content { padding: 26px 28px 70px; max-width: 1180px; position: relative; z-index: 1; }
+
+  .hero-banner {
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; gap: 22px;
+    padding: 30px 32px; margin-bottom: 18px;
+  }
+  .hero-banner .glow {
+    position: absolute; left: -60px; top: 50%; transform: translateY(-50%);
+    width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,162,39,0.35) 0%, rgba(59,110,165,0.18) 45%, transparent 72%);
+    filter: blur(6px); pointer-events: none;
+  }
+  .hero-banner img {
+    position: relative; width: 84px; height: 84px; flex: none; z-index: 1;
+    filter: drop-shadow(0 0 18px rgba(231,199,103,0.55));
+  }
+  .hero-banner .titles { position: relative; z-index: 1; }
+  .hero-banner .titles h2 { margin: 0; font-size: 1.6rem; letter-spacing: 0.02em; color: #fff; }
+  .hero-banner .titles .tagline { margin-top: 4px; font-size: 0.72rem; letter-spacing: 0.14em; color: var(--gold-bright); text-transform: uppercase; }
+
+  .flower-of-life {
+    position: fixed; left: -90px; bottom: -90px; width: 320px; height: 320px;
+    opacity: 0.07; pointer-events: none; z-index: 0;
+  }
 
   .card-dark {
     background: #0E1830; border: 1px solid var(--navy-soft); border-radius: var(--radius);
@@ -151,6 +175,25 @@
     </div>
 
     <div class="dash-content">
+
+      <svg class="flower-of-life" viewBox="0 0 200 200" fill="none" stroke="var(--gold)" stroke-width="0.6">
+        <circle cx="100" cy="100" r="30"/>
+        <circle cx="100" cy="65" r="30"/><circle cx="100" cy="135" r="30"/>
+        <circle cx="70" cy="82.5" r="30"/><circle cx="70" cy="117.5" r="30"/>
+        <circle cx="130" cy="82.5" r="30"/><circle cx="130" cy="117.5" r="30"/>
+        <circle cx="100" cy="30" r="30"/><circle cx="100" cy="170" r="30"/>
+        <circle cx="40" cy="65" r="30"/><circle cx="40" cy="135" r="30"/>
+        <circle cx="160" cy="65" r="30"/><circle cx="160" cy="135" r="30"/>
+      </svg>
+
+      <div class="card-dark hero-banner">
+        <div class="glow"></div>
+        <img src="assets/images/vvp-mark-cream.png" alt="">
+        <div class="titles">
+          <h2>Vibrational Virtue<sup>™</sup> Practitioner Portal</h2>
+          <div class="tagline">Precision · Clarity · Coherence</div>
+        </div>
+      </div>
 
       <div class="hero-row">
         <div class="card-dark">
