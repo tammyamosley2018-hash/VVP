@@ -365,3 +365,64 @@ drop trigger if exists on_intake_submission_notify_n8n on client_intake_submissi
 create trigger on_intake_submission_notify_n8n
   after insert on client_intake_submissions
   for each row execute function notify_n8n_on_intake_submission();
+
+-- ============================================================
+-- PROFILE PHOTOS
+-- One shared "avatars" bucket, path-scoped per practitioner:
+--   practitioner/{practitioner_id}/xxx.jpg
+--   client/{client_id}/xxx.jpg
+-- Public read (these are just portal profile photos, same
+-- sensitivity as the site's other branding images), write
+-- restricted to the owning practitioner.
+-- ============================================================
+
+alter table practitioners add column if not exists avatar_url text;
+alter table clients add column if not exists avatar_url text;
+
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do nothing;
+
+drop policy if exists "avatars_public_read" on storage.objects;
+create policy "avatars_public_read" on storage.objects
+  for select using (bucket_id = 'avatars');
+
+drop policy if exists "avatars_practitioner_write_own" on storage.objects;
+create policy "avatars_practitioner_write_own" on storage.objects
+  for insert with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = 'practitioner'
+    and (storage.foldername(name))[2] = current_practitioner_id()::text
+  );
+
+drop policy if exists "avatars_practitioner_update_own" on storage.objects;
+create policy "avatars_practitioner_update_own" on storage.objects
+  for update using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = 'practitioner'
+    and (storage.foldername(name))[2] = current_practitioner_id()::text
+  );
+
+drop policy if exists "avatars_practitioner_write_client" on storage.objects;
+create policy "avatars_practitioner_write_client" on storage.objects
+  for insert with check (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = 'client'
+    and exists (
+      select 1 from clients
+      where id::text = (storage.foldername(name))[2]
+        and practitioner_id = current_practitioner_id()
+    )
+  );
+
+drop policy if exists "avatars_practitioner_update_client" on storage.objects;
+create policy "avatars_practitioner_update_client" on storage.objects
+  for update using (
+    bucket_id = 'avatars'
+    and (storage.foldername(name))[1] = 'client'
+    and exists (
+      select 1 from clients
+      where id::text = (storage.foldername(name))[2]
+        and practitioner_id = current_practitioner_id()
+    )
+  );
