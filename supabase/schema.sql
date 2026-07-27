@@ -327,8 +327,19 @@ set search_path = public
 as $$
 declare
   v_practitioner practitioners%rowtype;
+  v_is_first_submission boolean;
 begin
   select * into v_practitioner from practitioners where id = new.practitioner_id;
+
+  -- "First submission" is keyed on practitioner + client email rather than
+  -- client_id, since client_id can be null (intake not yet linked to a
+  -- clients row) — this stays accurate either way.
+  select not exists (
+    select 1 from client_intake_submissions
+    where id <> new.id
+      and practitioner_id = new.practitioner_id
+      and client_email = new.client_email
+  ) into v_is_first_submission;
 
   perform net.http_post(
     url := 'https://deft-bison-84.nbg1-3.instapods.app/webhook/c56b83b4-068b-4e83-add8-d46cda55ab5a',
@@ -341,6 +352,7 @@ begin
       'client_name', new.client_name,
       'client_email', new.client_email,
       'client_phone', new.form_data ->> 'phone',
+      'is_first_submission', v_is_first_submission,
       'submitted_at', new.submitted_at
     )
   );

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Volume I — Training &amp; Certification Manual — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 860px; margin: 0 auto; padding: 32px 20px 90px; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .jumpbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--parchment);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .jumpbar select {
+    font: inherit;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1.5px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+  }
+  .jumpbar a.back {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cover {
+    background: var(--navy);
+    color: var(--parchment);
+    border-radius: var(--radius);
+    padding: 40px 30px;
+    text-align: center;
+    margin: 24px 0 30px;
+    border: 1px solid var(--navy-soft);
+  }
+  .cover .eyebrow {
+    color: var(--gold-bright);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .cover h1 { margin: 10px 0 6px; font-size: 1.9rem; }
+  .cover p { color: var(--crystal-pale); max-width: 46ch; margin: 10px auto 0; font-size: 0.92rem; }
+  .cover .tags {
+    display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+    margin-top: 22px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--gold-bright);
+  }
+
+  .toc-card {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 30px;
+  }
+  .toc-card h2 { margin-top: 0; font-size: 1.15rem; }
+  .toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; margin: 0; padding: 0; list-style: none; }
+  .toc-grid a { text-decoration: none; font-size: 0.92rem; display: flex; gap: 8px; padding: 4px 0; }
+  .toc-grid .num { color: var(--gold); font-weight: 700; flex: none; width: 1.3em; }
+  @media (max-width: 560px) { .toc-grid { grid-template-columns: 1fr; } }
+
+  section.manual-section {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 28px 26px; margin-bottom: 22px; scroll-margin-top: 68px;
+  }
+  section.manual-section h2 { margin-top: 0; font-size: 1.3rem; }
+  section.manual-section h3 { font-size: 1.02rem; color: var(--navy-soft); }
+  .callout {
+    background: var(--sand); border-left: 4px solid var(--gold);
+    border-radius: 6px; padding: 14px 16px; margin: 16px 0; font-size: 0.92rem;
+  }
+  .callout .label { font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--navy-soft); display: block; margin-bottom: 4px; }
+  .callout.warn { background: #F6E9E9; border-left-color: var(--error); }
+  .callout.warn .label { color: var(--error); }
+
+  .may-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 16px 0; }
+  .may-cols > div { background: var(--parchment); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .may-cols h4 { margin: 0 0 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .may-cols ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+  @media (max-width: 560px) { .may-cols { grid-template-columns: 1fr; } }
+
+  table.manual-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.88rem; }
+  table.manual-table th, table.manual-table td { text-align: left; padding: 8px 10px; border: 1px solid var(--line); vertical-align: top; }
+  table.manual-table th { background: var(--sand); font-weight: 600; }
+
+  .notes-label { font-weight: 600; font-size: 0.85rem; margin: 18px 0 8px; display: block; }
+  textarea.persist, input.persist[type="text"] {
+    width: 100%; font: inherit; padding: 10px 12px; border: 1.5px solid var(--line);
+    border-radius: 8px; background: var(--parchment); color: var(--ink); resize: vertical;
+  }
+  textarea.persist:focus, input.persist[type="text"]:focus { border-color: var(--crystal); background: #fff; }
+
+  .module-list { list-style: none; margin: 0; padding: 0; }
+  .module-list li { border-bottom: 1px solid var(--line); }
+  .module-list li:last-child { border-bottom: none; }
+  details.module { padding: 0; }
+  details.module summary {
+    cursor: pointer; padding: 14px 4px; font-weight: 600; list-style: none;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  details.module summary::-webkit-details-marker { display: none; }
+  details.module summary .tag { color: var(--gold); font-family: 'Fraunces', serif; font-weight: 600; flex: none; }
+  details.module summary::after { content: '+'; margin-left: auto; color: var(--ink-mute); font-size: 1.1rem; }
+  details.module[open] summary::after { content: '−'; }
+  details.module .body { padding: 0 4px 20px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+  .chip { background: var(--crystal-pale); color: var(--navy-soft); border-radius: 999px; padding: 3px 11px; font-size: 0.78rem; font-weight: 600; }
+  .knowledge-check label { display: block; font-size: 0.82rem; font-weight: 600; margin: 12px 0 4px; }
+
+  .cert-checklist { list-style: none; margin: 0; padding: 0; }
+  .cert-checklist li { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 0.92rem; }
+  .cert-checklist input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--gold); }
+
+  .save-note { font-size: 0.78rem; color: var(--ink-mute); text-align: center; margin: -6px 0 26px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Volume I — Training &amp; Certification Manual</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" hidden>
+
+<div class="jumpbar">
+  <a class="back" href="practitioner-dashboard.html">&larr; Dashboard</a>
+  <select id="jump-select" aria-label="Jump to section">
+    <option value="">Jump to…</option>
+    <option value="about">About this manual</option>
+    <option value="s1">1 · Welcome &amp; System Overview</option>
+    <option value="s2">2 · Scope of Practice &amp; Legal Standards</option>
+    <option value="s3">3 · Practitioner Ethics &amp; Code of Conduct</option>
+    <option value="s4">4 · Practitioner Identity &amp; Professional Standards</option>
+    <option value="s5">5 · Official VVP Language &amp; Service Script</option>
+    <option value="s6">6 · Session Workflow &amp; SOPs</option>
+    <option value="s7">7 · Radiesthesia, Tools &amp; Calibration Standards</option>
+    <option value="s8">8 · Intake, Consent &amp; Witness Protocols</option>
+    <option value="s9">9 · Terrain Assessment &amp; Prioritization</option>
+    <option value="s10">10 · Organ, Gland &amp; System Assessment</option>
+    <option value="s11">11 · Biofield, Chakra &amp; Meridian Assessment</option>
+    <option value="s12">12 · Environmental, Geopathic &amp; EMF Assessment</option>
+    <option value="s13">13 · Correction Testing &amp; Compatibility Protocols</option>
+    <option value="s14">14 · Corrections, Reassessment &amp; Stabilization</option>
+    <option value="s15">15 · Documentation Standards Overview</option>
+    <option value="s16">16 · Client Education &amp; Home Support</option>
+    <option value="s17">17 · Referral Guidelines &amp; Red Flag Protocols</option>
+    <option value="s18">18 · Business, Marketing &amp; Client Communication</option>
+    <option value="foundational">Foundational Training Modules (2–15)</option>
+    <option value="advanced">Advanced Training Modules (16–25)</option>
+    <option value="s19">19 · Practicum, Case Studies &amp; Skills Review</option>
+    <option value="s20">20 · Certification Requirements &amp; Process</option>
+    <option value="s21">21 · Appendices &amp; Resource Library</option>
+    <option value="cert-record">Fillable Certification Review Record</option>
+  </select>
+</div>
+
+<div class="shell">
+
+  <div class="cover">
+    <span class="eyebrow">Commission Certification System</span>
+    <h1>Volume I — Training &amp; Certification Manual</h1>
+    <p>The official training curriculum, standards, and procedures for Vibrational Virtue Practitioners. Version 1.0. Effective May 2025.</p>
+    <div class="tags">
+      <span>Training Curriculum</span><span>Standards &amp; Ethics</span><span>SOPs &amp; Workflows</span><span>Certification Requirements</span><span>Practicum &amp; Skills Review</span>
+    </div>
+  </div>
+
+  <div class="toc-card" id="about">
+    <h2>About This Manual</h2>
+    <p>This is the official Volume I training and certification manual for the Vibrational Virtue Practitioner Commission Certification System. It teaches the scope, standards, ethics, session workflow, practitioner language, assessment categories, correction testing, reassessment, stabilization, documentation expectations, referral rules, practicum review, and certification process required for VVP training.</p>
+    <p>Volume I is a training manual. It is not the full client intake packet and it is not the practitioner master record.</p>
+    <table class="manual-table">
+      <tr><th>Volume</th><th>Primary Function</th><th>Belongs Here</th></tr>
+      <tr><td>Volume I</td><td>Training &amp; Certification Manual</td><td>Training standards, protocols, ethics, scope, certification process</td></tr>
+      <tr><td>Volume II</td><td>Client Intake &amp; Results Packet</td><td>Client-facing intake, consent, session results, recommendations, follow-up</td></tr>
+      <tr><td>Volume III</td><td>Client Energetic Wellness Record</td><td>Practitioner-only assessment, testing, correction, progress tracking, notes</td></tr>
+    </table>
+    <div class="callout warn">
+      <span class="label">Educational Notice</span>
+      This manual is educational, spiritual, energetic, symbolic, environmental, and practitioner-training in nature. It does not provide medical diagnosis, medical treatment, prescription, disease management, emergency care, licensed inspection, legal advice, or replacement for qualified professional services.
+    </div>
+  </div>
+
+  <section class="manual-section" id="s1">
+    <h2>Section 1: Welcome &amp; System Overview</h2>
+    <p>Vibrational Virtue Practice is a complementary energetic wellness discipline using structured radiesthetic assessment, resonance testing, pendulum observation, field mapping, and correction compatibility protocols. The work is organized, consent-based, documented, and scope-safe.</p>
+    <p>The purpose of Volume I is to train the practitioner to observe field response, establish a baseline, test compatible supports, apply correction within scope, reassess, stabilize, document, and refer when a concern exceeds the VVP scope.</p>
+    <div class="callout"><span class="label">Core VVP Principle</span>The practitioner observes energetic response patterns. The practitioner does not diagnose disease, prescribe treatment, replace licensed care, guarantee outcomes, or represent uncertainty as certainty.</div>
+    <h3>The Complete VVP Workflow</h3>
+    <ul>
+      <li>Prepare the practitioner and tools.</li><li>Confirm consent and scope.</li><li>Connect to witness when appropriate.</li>
+      <li>Scan the field and establish a baseline.</li><li>Identify the priority imbalance or stress pattern.</li>
+      <li>Test compatible corrective support.</li><li>Apply support only within scope.</li>
+      <li>Confirm correction through reassessment.</li><li>Seal, stabilize, and close.</li><li>Document the session.</li>
+    </ul>
+    <h3>Training Outcome</h3>
+    <p>A trained practitioner must be able to explain the system, perform the session workflow, maintain ethical boundaries, document clearly, and communicate findings in scope-safe language.</p>
+    <label class="notes-label" for="notes-s1">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s1" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s2">
+    <h2>Section 2: Scope of Practice &amp; Legal Standards</h2>
+    <p>Scope of practice defines what a VVP practitioner may and may not do. It protects the client, the practitioner, and the system.</p>
+    <div class="callout"><span class="label">Official Scope Statement</span>VVP is a complementary energetic wellness method. It uses radiesthetic tools, pendulum observation, resonance testing, field mapping, witness work when appropriate, and correction compatibility testing to observe energetic patterns and support coherence. VVP does not diagnose disease, prescribe treatment, replace medical or mental health care, perform psychotherapy, provide emergency services, or replace licensed environmental inspection, electrical inspection, EMF testing, mold testing, radon testing, structural assessment, or safety evaluation.</div>
+    <div class="may-cols">
+      <div><h4>Practitioner May</h4><ul>
+        <li>Observe field response.</li><li>Use calibrated tools.</li><li>Assess resonance compatibility.</li>
+        <li>Apply tested corrective supports within scope.</li><li>Confirm correction through reassessment.</li>
+        <li>Seal and stabilize.</li><li>Document the session.</li><li>Refer when concerns exceed scope.</li>
+      </ul></div>
+      <div><h4>Practitioner May Not</h4><ul>
+        <li>Diagnose disease or mental illness.</li>
+        <li>Prescribe medical treatment, medication, herbs, supplements, or detox protocols unless separately qualified and legally permitted.</li>
+        <li>Claim to cure or guarantee outcomes.</li><li>Test without consent.</li>
+        <li>Represent uncertainty as certainty.</li><li>Replace emergency care, licensed care, inspection, or safety testing.</li>
+      </ul></div>
+    </div>
+    <div class="callout warn"><span class="label">Required Disclaimer</span>Vibrational Virtue Practice is a complementary energetic wellness method. It is not medical care, mental health care, diagnosis, prescription, treatment, or emergency service. You are responsible for your own health decisions and should consult licensed professionals for medical symptoms, diagnosis, treatment, medication decisions, mental health concerns, environmental hazards, or urgent matters.</div>
+    <label class="notes-label" for="notes-s2">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s2" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s3">
+    <h2>Section 3: Practitioner Ethics &amp; Code of Conduct</h2>
+    <p>The ethical foundation of VVP is simple: do no harm, do not deceive, do not manipulate, and do not exceed your scope.</p>
+    <h3>Core Ethical Duties</h3>
+    <ul>
+      <li>Obtain consent before testing, witness work, correction, or remote work.</li>
+      <li>Respect client privacy and confidentiality.</li>
+      <li>Use clear language and avoid fear-based claims.</li>
+      <li>Represent training status truthfully.</li>
+      <li>Avoid dependency-based business practices.</li>
+      <li>Protect course materials and intellectual property.</li>
+      <li>Use tools only within training and authorization.</li>
+      <li>Refer when the client needs care outside VVP.</li>
+    </ul>
+    <h3>Consent and Witness Ethics</h3>
+    <p>Students may not scan, test, influence, correct, emit toward, witness-work on, or document another person, place, object, or environment without appropriate consent and ethical alignment.</p>
+    <h3>Material Protection</h3>
+    <p>Course materials, diagrams, protocols, workbook pages, recordings, charts, proprietary teaching language, and VVP-specific systems must not be copied, distributed, uploaded to AI systems, public platforms, third-party tools, or competing curriculum without written permission.</p>
+    <div class="callout"><span class="label">Code of Conduct</span>Practice with honesty, humility, discernment, respect, and self-discipline. Honor client consent, cultural sovereignty, spiritual autonomy, privacy, and personal boundaries at all times.</div>
+    <label class="notes-label" for="notes-s3">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s3" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s4">
+    <h2>Section 4: Practitioner Identity &amp; Professional Standards</h2>
+    <p>A Vibrational Virtue Practitioner is a trained energetic wellness practitioner who works with vibrational qualities, resonance patterns, and field responses of a person, space, object, or environment within VVP scope.</p>
+    <p>Vibrational Virtue means virtue is understood as a beneficial, life-supporting quality reflected through vibration, coherence, resonance, balance, alignment, and energetic expression.</p>
+    <h3>Professional Standard</h3>
+    <ul>
+      <li>Be calm, clear, and grounded.</li><li>Do not dramatize findings.</li>
+      <li>Do not use titles or authority that have not been granted.</li>
+      <li>Do not call yourself an instructor or representative unless formally authorized.</li>
+      <li>Do not use the work to manipulate or intimidate.</li><li>Know when to stop and refer.</li>
+    </ul>
+    <h3>Approved Status Language</h3>
+    <ul>
+      <li>VVP student.</li><li>VVP certification candidate.</li><li>VVP practitioner.</li>
+      <li>Certified VVP practitioner, only after certification is granted.</li>
+      <li>VVP instructor, only if officially authorized.</li>
+    </ul>
+    <div class="callout warn">Do not invent titles. Do not call yourself a master, healer, medical intuitive, inspector, licensor, affiliate, or authorized school unless that status is formally true and permitted.</div>
+    <label class="notes-label" for="notes-s4">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s4" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s5">
+    <h2>Section 5: Official VVP Language &amp; Service Script</h2>
+    <p>VVP practitioners must explain the work clearly and consistently before entering the session or presenting services publicly.</p>
+    <div class="callout"><span class="label">Public Definition</span>Vibrational Virtue Practice is a complementary energetic wellness and biofield harmonization discipline rooted in radiesthetic principles, field assessment, environmental sensitivity, and resonance-based correction.</div>
+    <h3>Memorized Practitioner Script</h3>
+    <p>"I offer VVP energetic assessments. VVP stands for Vibrational Virtue Practice. It is a resonance-based energetic wellness system that uses calibrated radiesthetic and energetic tools, along with structured field observation, to assess energetic stress, imbalance, interference, and coherence in the biofield. This may include the aura, chakra system, energetic centers, environmental influences, and the harmonic state of organs, glands, and body systems as reflected through the energetic field. From there, I test compatible frequency, vibration, sound, color, and resonance-based supports, apply correction within VVP scope, and reassess the field response for balance and stabilization."</p>
+    <div class="may-cols">
+      <div><h4>Required Language</h4><ul>
+        <li>This is an energetic observation.</li><li>This category tested as a priority.</li>
+        <li>This support tested as compatible.</li><li>This is not a diagnosis.</li>
+        <li>This does not replace licensed care.</li><li>Physical hazards need qualified evaluation.</li>
+      </ul></div>
+      <div><h4>Prohibited Language</h4><ul>
+        <li>This cures you.</li><li>This proves disease.</li>
+        <li>Your organ is weak or failing.</li><li>Your house is toxic.</li>
+        <li>You are cursed.</li><li>Only I can fix this.</li>
+      </ul></div>
+    </div>
+    <label class="notes-label" for="notes-s5">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s5" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s6">
+    <h2>Section 6: Session Workflow &amp; Standard Operating Procedures</h2>
+    <p>The VVP session workflow protects the session from becoming casual, vague, or unsafe. Every session should follow an organized sequence.</p>
+    <h3>Core VVP Session Flow</h3>
+    <ul>
+      <li>Clearing.</li><li>Tune to personal wavelength.</li><li>Confirm consent.</li>
+      <li>Connect to witness when appropriate.</li><li>Scan the field.</li>
+      <li>Identify the priority imbalance.</li><li>Test compatible corrective support.</li>
+      <li>Apply correction within scope.</li><li>Confirm correction.</li>
+      <li>Reassess the field response.</li><li>Seal and stabilize the correction.</li><li>Document the session.</li>
+    </ul>
+    <h3>Standard Session Sequence</h3>
+    <ul>
+      <li>Session preparation.</li><li>Client greeting and scope reminder.</li>
+      <li>Intake review and red flag check.</li><li>Consent confirmation.</li>
+      <li>Practitioner clearing and calibration.</li><li>Baseline field check.</li>
+      <li>Assessment category testing.</li><li>Priority ranking.</li>
+      <li>Correction compatibility testing.</li><li>Correction application or recommendation.</li>
+      <li>Reassessment.</li><li>Stabilization and witness closure.</li>
+      <li>Client education.</li><li>Documentation and referral notes.</li>
+    </ul>
+    <div class="callout warn">If the practitioner becomes unclear, the client becomes distressed, or a red flag appears, the practitioner pauses, stabilizes, and refers when needed.</div>
+    <label class="notes-label" for="notes-s6">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s6" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s7">
+    <h2>Section 7: Radiesthesia, Tools &amp; Calibration Standards</h2>
+    <p>Radiesthesia is the disciplined practice of detecting and interpreting subtle field response through controlled resonance. In VVP, radiesthesia is never treated as unlimited truth. It is a structured tool practice requiring consent, calibration, clear questions, and documentation.</p>
+    <table class="manual-table">
+      <tr><th>Response</th><th>Meaning</th></tr>
+      <tr><td>Strong clockwise</td><td>Strong resonance, compatibility, coherence, support</td></tr>
+      <tr><td>Slow clockwise</td><td>Weak resonance, mild compatibility, partial support</td></tr>
+      <tr><td>Counterclockwise</td><td>Stress, blockage, incompatibility, non-optimal response</td></tr>
+      <tr><td>Back-and-forth</td><td>Search position, neutral, unclear, unstable</td></tr>
+      <tr><td>No movement</td><td>No response, blocked connection, recalibrate</td></tr>
+      <tr><td>Erratic</td><td>Interference, unclear question, practitioner instability, stop and reset</td></tr>
+    </table>
+    <h3>Calibration Rules</h3>
+    <ul>
+      <li>Clear yourself before testing.</li><li>Clear or prepare the tool.</li><li>Confirm consent.</li>
+      <li>Establish search position.</li><li>Tune to personal wavelength when required.</li>
+      <li>Ask one clear question at a time.</li><li>Use control questions when needed.</li><li>Reassess after correction.</li>
+    </ul>
+    <h3>Tool Categories</h3>
+    <p>Neutral pendulum · Turenne-style pendulum if trained · Compass and orientation tools · Witnesses · Color witnesses · Shape forms · Anatomy and system charts · Meridian and chakra charts · Environmental maps and floor plans · Advanced tools only after official training.</p>
+    <label class="notes-label" for="notes-s7">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s7" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s8">
+    <h2>Section 8: Intake, Consent &amp; Witness Protocols</h2>
+    <p>No consent means no session. Intake and consent come before pendulum testing, witness use, correction testing, remote work, or energetic emission.</p>
+    <h3>Intake Must Confirm</h3>
+    <ul>
+      <li>Client identity and session purpose.</li><li>Main energetic concern.</li><li>Scope awareness.</li>
+      <li>Red flag check.</li><li>Consent for assessment.</li><li>Consent for witness work if used.</li>
+      <li>Consent for remote or environmental work if applicable.</li><li>Client right to pause or stop.</li>
+    </ul>
+    <h3>Witness Definition</h3>
+    <p>A witness is a representation of a person, place, field, object, or target used to establish radiesthetic connection with consent. It may include a written name, photograph, personal object, sample, map, floor plan, or other agreed representation.</p>
+    <h3>Witness Procedure</h3>
+    <ul>
+      <li>Identify the session target.</li><li>Confirm consent.</li><li>Select the simplest appropriate witness.</li>
+      <li>Label or identify the witness.</li><li>Place it in the testing area.</li><li>Tune the pendulum to the witness.</li>
+      <li>Test only the agreed scope.</li><li>Close witness work after the session.</li>
+      <li>Return, store, or dispose according to consent.</li><li>Document witness handling.</li>
+    </ul>
+    <div class="callout warn"><span class="label">No Third-Party Testing</span>Do not test another person, private space, relationship, enemy, public figure, child, spouse, or roommate without appropriate consent or legal authority.</div>
+    <label class="notes-label" for="notes-s8">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s8" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s9">
+    <h2>Section 9: Terrain Assessment &amp; Prioritization</h2>
+    <p>Terrain assessment evaluates the client's general energetic condition before deeper categories. It helps determine whether the field is stable enough for organ, gland, system, biofield, chakra, meridian, environmental, or correction work.</p>
+    <h3>Terrain Categories</h3>
+    <p>General vitality · Hydration resonance · Grounding response · Lymphatic flow category · Detoxification stress pattern · Rest and recovery pattern · Emotional load · Nervous system stress pattern · Environmental burden · Correction readiness.</p>
+    <h3>Terrain Language</h3>
+    <p>Use energetic language: hydration support tested compatible, grounding tested as priority, lymphatic flow category showed weak resonance, the field needs stabilization before advanced correction. Do not say the client is toxic, dehydrated, diseased, or medically unstable.</p>
+    <div class="callout"><span class="label">Priority Rule</span>Do not assume the loudest finding is the first priority. Test priority order and begin with the foundational support that tests strongest.</div>
+    <label class="notes-label" for="notes-s9">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s9" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s10">
+    <h2>Section 10: Organ, Gland &amp; System Assessment</h2>
+    <p>Organ, gland, and system assessment is energetic category testing. It is not medical diagnosis, medical testing, lab interpretation, imaging interpretation, or treatment planning.</p>
+    <div class="may-cols">
+      <div><h4>Approved Language</h4><ul>
+        <li>Liver category showed weak energetic resonance.</li><li>Kidney category did not test as the first priority today.</li>
+        <li>Thyroid category showed a stress indicator.</li><li>Digestive system category tested as priority.</li>
+        <li>This is an energetic observation, not a medical conclusion.</li>
+      </ul></div>
+      <div><h4>Prohibited Language</h4><ul>
+        <li>You have liver disease.</li><li>Your kidneys are failing.</li>
+        <li>Your hormones are imbalanced.</li><li>This confirms infection.</li><li>This will cure the organ.</li>
+      </ul></div>
+    </div>
+    <h3>Assessment Procedure</h3>
+    <p>Confirm consent and scope → use clean drawn charts or approved system maps → calibrate → test general system category first → test specific categories one at a time → rank priority → test correction compatibility → reassess → document → refer medical symptoms to licensed care.</p>
+    <div class="callout warn"><span class="label">Spinal Map Caution</span>Spinal resonance assignments are energetic mapping tools only. A vertebral-category response does not diagnose an organ condition.</div>
+    <label class="notes-label" for="notes-s10">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s10" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s11">
+    <h2>Section 11: Biofield, Chakra &amp; Meridian Assessment</h2>
+    <p>Biofield, chakra, and meridian assessment observes subtle-field structures, energetic centers, and flow pathways. The practitioner may assess field coherence, chakra response, meridian flow, and layer priority within scope.</p>
+    <div class="callout warn"><span class="label">Subtle Field Boundary</span>Do not use biofield or chakra language to diagnose trauma, mental illness, possession, curses, spiritual attack, disease, morality, or destiny.</div>
+    <table class="manual-table">
+      <tr><th>Energy Center</th><th>General VVP Focus</th></tr>
+      <tr><td>Root</td><td>Grounding, safety, physical stability</td></tr>
+      <tr><td>Sacral</td><td>Flow, creativity, emotional movement</td></tr>
+      <tr><td>Solar Plexus</td><td>Will, digestion of experience, personal power</td></tr>
+      <tr><td>Heart</td><td>Coherence, compassion, relational field</td></tr>
+      <tr><td>Throat</td><td>Expression, communication, truth alignment</td></tr>
+      <tr><td>Third Eye</td><td>Perception, insight, inner vision</td></tr>
+      <tr><td>Crown</td><td>Spiritual connection, higher alignment</td></tr>
+    </table>
+    <h3>Meridian Categories</h3>
+    <p>Meridians are assessed as energetic pathways. Use terms such as weak flow response, priority pathway, meridian clearing tested compatible, and reassessment improved. Do not say the organ itself is diseased.</p>
+    <h3>Stabilization</h3>
+    <p>Subtle-field work must close with grounding, breath, water, centering, witness closure, and clear documentation.</p>
+    <label class="notes-label" for="notes-s11">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s11" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s12">
+    <h2>Section 12: Environmental, Geopathic &amp; EMF Assessment</h2>
+    <p>Environmental assessment observes energetic stress patterns connected to land, sleep zones, buildings, devices, geopathic indicators, and household load. It must remain practical and physical-first.</p>
+    <div class="callout warn"><span class="label">Physical-First Rule</span>Check the physical first. Mold, radon, wiring, carbon monoxide, gas leaks, moisture, unsafe water, structural concerns, and immediate hazards must be handled by qualified professionals. VVP environmental assessment does not replace inspection or emergency services.</div>
+    <h3>Bedroom-First Assessment</h3>
+    <ul>
+      <li>Check the bed location and headboard wall.</li>
+      <li>Check phone, charger, router, mesh node, smart meter, breaker panel, appliances, and heavy wiring near sleep zones.</li>
+      <li>Check dampness, staining, musty odor, mold concerns, ventilation, and radon risk.</li>
+      <li>Move devices away from the bed when practical.</li>
+      <li>Move the bed if the location tests poorly and observe 14–30 days.</li>
+    </ul>
+    <table class="manual-table">
+      <tr><th>Audit Zone</th><th>Question</th></tr>
+      <tr><td>Body</td><td>What devices touch or stay close to the body?</td></tr>
+      <tr><td>Bed</td><td>What is within six feet of the head?</td></tr>
+      <tr><td>Room</td><td>Is there a router, mesh node, smart speaker, or device cluster?</td></tr>
+      <tr><td>Wall</td><td>What is behind the headboard?</td></tr>
+      <tr><td>Children</td><td>What transmits near the child's bed or crib?</td></tr>
+      <tr><td>Work Area</td><td>Can anything be wired instead of wireless?</td></tr>
+      <tr><td>Outside</td><td>Are meters, transformers, towers, or small cells nearby?</td></tr>
+    </table>
+    <p>Reduce exposure without panic. Start with simple actions: distance, relocation, turning devices off when practical, wiring what can be wired, and observing changes.</p>
+    <label class="notes-label" for="notes-s12">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s12" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s13">
+    <h2>Section 13: Correction Testing &amp; Compatibility Protocols</h2>
+    <p>Correction testing identifies what support is energetically compatible with the client, priority, witness, field, and session today. Correction testing is not prescription and does not guarantee results.</p>
+    <h3>Correction Testing Sequence</h3>
+    <p>Assess → identify category stress → rank priority → confirm correction testing is appropriate → test possible supports → choose the strongest compatible support → apply or recommend within scope → reassess → stabilize → document.</p>
+    <h3>Correction Categories</h3>
+    <ul>
+      <li>Foundational supports: water, grounding, breath, rest, reduced stimulation.</li>
+      <li>Field supports: centering vibration, color witness, shape form, chakra or meridian support.</li>
+      <li>Environmental supports: move bed, move router, reduce wireless load, physical referral.</li>
+      <li>Advanced supports: crystal tools, Chestahedron, conscious emission, Melanin Pendulum protocols only if trained and authorized.</li>
+    </ul>
+    <p>Compatibility scale: strong clockwise = compatible/supportive · slow clockwise = mild/partial · counterclockwise = incompatible/stress · back-and-forth = neutral/unclear · erratic = stop, clear, recalibrate.</p>
+    <label class="notes-label" for="notes-s13">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s13" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s14">
+    <h2>Section 14: Corrections, Reassessment &amp; Stabilization</h2>
+    <p>Correction work is not complete until the practitioner applies or recommends the compatible support with consent, reassesses the original priority, stabilizes the client, and documents the result.</p>
+    <h3>Correction Application Sequence</h3>
+    <p>State the original priority → state the support that tested compatible → confirm consent → apply or recommend the support → observe response → reassess original priority → stabilize → document.</p>
+    <div class="callout"><span class="label">Reassessment Requirement</span>Every correction must be reassessed. Reassessment asks whether the field response changed. It does not ask whether the client was cured.</div>
+    <h3>Stabilization Protocol</h3>
+    <ul>
+      <li>Put tools down.</li><li>Ask client to place feet on floor.</li><li>Invite three slow breaths.</li>
+      <li>Offer water.</li><li>State that active testing is complete.</li><li>Close witness connection if used.</li>
+      <li>Confirm client feels steady.</li><li>Give simple home support.</li><li>Document stabilization.</li>
+    </ul>
+    <label class="notes-label" for="notes-s14">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s14" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s15">
+    <h2>Section 15: Documentation Standards Overview</h2>
+    <p>Documentation is a core VVP professional standard. A VVP session should leave a clear record of what was done, observed, tested, corrected or recommended, reassessed, stabilized, and referred.</p>
+    <p><strong>Volume Boundary:</strong> Volume I teaches documentation standards. Volume III carries the full practitioner-only documentation record. Volume II carries the client-facing intake, consent, results, recommendations, and follow-up packet.</p>
+    <h3>Required Session Record Elements</h3>
+    <p>Client name or code · date and session type · consent confirmation · red flag check · witness type if used · tools used · calibration notes · assessment categories · priority findings · corrections tested · reassessment results · stabilization · client education · referral if needed · witness handling.</p>
+    <div class="callout">Write: "heart center weak clockwise; green witness compatible; reassessment strong clockwise." Do not write: "client's heart is healed." Documentation must be factual, scope-safe, and reviewable.</div>
+    <label class="notes-label" for="notes-s15">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s15" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s16">
+    <h2>Section 16: Client Education &amp; Home Support Guidelines</h2>
+    <p>Client education translates the session into clear, practical, scope-safe guidance: the energetic priority, compatible support, reassessment result, simple home support, observation period, and referral reminders.</p>
+    <div class="may-cols">
+      <div><h4>Home Support May Include</h4><ul>
+        <li>Hydration.</li><li>Grounding.</li><li>Rest.</li><li>Breath practice.</li><li>Journaling.</li>
+        <li>Centering practice.</li><li>Environmental observation.</li><li>Wireless reduction basics.</li>
+        <li>Color witness or shape form only if tested compatible.</li><li>Follow-up if appropriate.</li>
+      </ul></div>
+      <div><h4>Home Support Must Not Include</h4><ul>
+        <li>Medication instructions.</li><li>Supplement or herb prescriptions.</li>
+        <li>Disease treatment plans.</li><li>Mental health treatment plans.</li>
+        <li>Diagnosis-based advice.</li><li>Instructions to stop licensed care.</li>
+        <li>Environmental hazard clearance without qualified inspection.</li>
+      </ul></div>
+    </div>
+    <div class="callout"><span class="label">Client Education Rule</span>Give one primary support, one secondary support, one observation instruction, and one referral reminder when needed. Do not overwhelm the client.</div>
+    <label class="notes-label" for="notes-s16">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s16" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s17">
+    <h2>Section 17: Referral Guidelines &amp; Red Flag Protocols</h2>
+    <p>Referral is not failure. Referral is professional responsibility. When the concern is outside VVP scope, refer.</p>
+    <div class="may-cols">
+      <div><h4>Medical Red Flags</h4><ul>
+        <li>Chest pain.</li><li>Severe shortness of breath.</li><li>Stroke-like symptoms.</li><li>Fainting.</li>
+        <li>Seizure.</li><li>Severe allergic reaction.</li><li>Uncontrolled bleeding.</li>
+        <li>Severe abdominal pain.</li><li>Possible poisoning.</li><li>Any urgent or severe symptom.</li>
+      </ul></div>
+      <div><h4>Mental Health Red Flags</h4><ul>
+        <li>Suicidal thoughts.</li><li>Self-harm.</li><li>Homicidal thoughts.</li><li>Psychosis.</li>
+        <li>Severe panic or depression.</li><li>Severe dissociation.</li><li>Client unable to stabilize.</li>
+      </ul></div>
+    </div>
+    <h3>Environmental Red Flags</h3>
+    <p>Carbon monoxide alarm · gas smell · burning smell · hot outlets or sparking · electrical shocks · visible mold or musty odor with symptoms · water intrusion · radon concern · unsafe water · structural instability.</p>
+    <div class="callout warn">Do not use the pendulum to override referral, emergency care, medication guidance, or physical safety concerns.</div>
+    <label class="notes-label" for="notes-s17">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s17" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s18">
+    <h2>Section 18: Business, Marketing &amp; Client Communication</h2>
+    <p>The business side of VVP must match the practice side. Public language must be disciplined, truthful, non-diagnostic, non-fear-based, and scope-safe.</p>
+    <div class="callout"><span class="label">Website Disclaimer</span>Vibrational Virtue Practice is a complementary energetic wellness method. It is not medical care, diagnosis, prescription, treatment, psychotherapy, environmental inspection, electrical inspection, mold testing, radon testing, or emergency service. VVP sessions are intended for energetic wellness education and field-supportive assessment only.</div>
+    <div class="may-cols">
+      <div><h4>Marketing May Say</h4><ul>
+        <li>Energetic wellness assessment.</li><li>Radiesthetic assessment.</li><li>Field mapping.</li>
+        <li>Correction compatibility testing.</li><li>Biofield, chakra, meridian, terrain, and environmental energetic assessment.</li>
+        <li>Reassessment and stabilization.</li>
+      </ul></div>
+      <div><h4>Marketing Must Not Say</h4><ul>
+        <li>Cures disease.</li><li>Finds what doctors missed.</li><li>Replaces therapy or medication.</li>
+        <li>Guarantees outcomes.</li><li>Certifies a home as safe.</li><li>Uses fear to sell sessions.</li>
+      </ul></div>
+    </div>
+    <p>Before, during, and after the session, communicate clearly: what was tested, what was observed, what support tested compatible, what changed on reassessment, what belongs outside scope, and what the client may observe at home.</p>
+    <label class="notes-label" for="notes-s18">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s18" rows="4"></textarea>
+  </section>
+
+  <div class="toc-card" id="foundational">
+    <h2>Foundational Training Modules</h2>
+    <p style="margin-top:0; font-size:0.9rem; color:var(--ink-mute);">Modules 2–15. Each module gives a purpose, core teaching, key concepts, unsafe-language boundary, and fillable application prompts. Tap a module to expand it.</p>
+    <table class="manual-table" style="margin-bottom:0;">
+      <tr><th>Mod.</th><th>Topic</th><th>Practitioner Focus</th></tr>
+      <tr><td>2</td><td>Radiesthesia &amp; NTR/Neter</td><td>Field response, formative principles, scope-safe explanation</td></tr>
+      <tr><td>3</td><td>Source Gap / Integrity</td><td>Do not invent missing curriculum; preserve sequence honestly</td></tr>
+      <tr><td>4</td><td>Energy Flow &amp; Pendulum Activation</td><td>Preparation, personal wavelength, search position, reassessment</td></tr>
+      <tr><td>5</td><td>Seven Hathors</td><td>Vibrational quality and quantity, naming and measuring resonance</td></tr>
+      <tr><td>6</td><td>Perception as Resonance</td><td>Separate observation from assumption</td></tr>
+      <tr><td>7</td><td>Five More Rays</td><td>Ultraviolet, White, Negative Green, Black, Infrared as tested qualities</td></tr>
+      <tr><td>8</td><td>Geometry, Resonance, Time &amp; Perception</td><td>Geometry gives vibration form; timing and proportion matter</td></tr>
+      <tr><td>9</td><td>Pendulum &amp; Monochord</td><td>Tuning, harmony, interference, wavelength, harmonic ratio</td></tr>
+      <tr><td>10</td><td>Torus Energy Key</td><td>Self-returning flow, expansion, compression, center</td></tr>
+      <tr><td>11</td><td>Geopathic Stress &amp; Earth Energies</td><td>Bedroom load, environmental mapping, physical-first safety</td></tr>
+      <tr><td>12</td><td>Beneficial Energies &amp; Doorways</td><td>Beneficial, grounding, activating, neutral, or draining site responses</td></tr>
+      <tr><td>13</td><td>Centering Vibration</td><td>Center, axis, alignment, stabilization before complex work</td></tr>
+      <tr><td>14</td><td>Shape Waves</td><td>Form emits; orientation and proportion change response</td></tr>
+      <tr><td>15</td><td>Self-Testing with Shape &amp; Resonance</td><td>Baseline, chart responsibility, correction selection, documentation</td></tr>
+    </table>
+  </div>
+
+  <section class="manual-section" id="foundational-modules" style="padding: 10px 26px;">
+    <ul class="module-list" id="module-list-foundational"></ul>
+  </section>
+
+  <div class="toc-card" id="advanced">
+    <h2>Advanced Training Modules</h2>
+    <p style="margin-top:0; font-size:0.9rem; color:var(--ink-mute);">Modules 16–25. Same standards as the foundational set: consent, baseline, compatibility testing, reassessment, stabilization, documentation, scope discipline.</p>
+    <table class="manual-table" style="margin-bottom:0;">
+      <tr><th>Mod.</th><th>Topic</th><th>Practitioner Focus</th></tr>
+      <tr><td>16</td><td>Magnetism &amp; Radiesthesia</td><td>Orientation, polarity, direction, attraction, field behavior</td></tr>
+      <tr><td>17</td><td>Magnetic Genesis of Form</td><td>Shape, sound, geometry, influence, consent</td></tr>
+      <tr><td>18</td><td>Magnetic North &amp; Polarization</td><td>Axis discipline, compass orientation, spectrum discipline</td></tr>
+      <tr><td>19</td><td>Monad, Dyad, Triad &amp; UCQ</td><td>Triadic field architecture and scope discipline</td></tr>
+      <tr><td>20</td><td>Harmonic Shells / Aura</td><td>Layered field architecture and one-layer-at-a-time testing</td></tr>
+      <tr><td>21</td><td>Human Grid &amp; Platonic Solids</td><td>Nodes, axis, layers, proportions, geometry without diagnosis</td></tr>
+      <tr><td>22</td><td>Crystal Tools</td><td>Clearing, orientation, compatibility, stabilization, documentation</td></tr>
+      <tr><td>23</td><td>Chestahedron</td><td>Heart-centered coherence and love as precision</td></tr>
+      <tr><td>24</td><td>Conscious Emission</td><td>Consent, witness, intention, compatibility, confirmation, stabilization</td></tr>
+      <tr><td>25</td><td>Melanin Pendulum</td><td>Resonance quality field instrument within strict VVP scope</td></tr>
+    </table>
+  </div>
+
+  <section class="manual-section" id="advanced-modules" style="padding: 10px 26px;">
+    <ul class="module-list" id="module-list-advanced"></ul>
+  </section>
+
+  <section class="manual-section" id="s19">
+    <h2>Section 19: Practicum, Case Studies &amp; Skills Review</h2>
+    <p>Practicum proves integration. It confirms the student can apply VVP safely, clearly, and professionally. Certification is based on observable readiness, not attendance alone.</p>
+    <h3>Practicum Must Demonstrate</h3>
+    <p>Consent and scope explanation · red flag check · calibration · witness protocol if used · assessment and priority ranking · correction compatibility testing · reassessment · stabilization · client education · documentation · referral recognition.</p>
+    <h3>Case Study Standard</h3>
+    <p>Case studies should be de-identified and written in VVP language, showing session type, client goal, tools used, assessment summary, priority finding, correction testing, reassessment, stabilization, client education, referral if needed, and student reflection.</p>
+    <h3>Skills Review Areas</h3>
+    <p>Pendulum skill · witness skill · terrain skill · body-system category skill · biofield/chakra/meridian skill · environmental skill · correction and reassessment skill · referral skill · client communication skill · documentation skill.</p>
+    <label class="notes-label" for="notes-s19">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s19" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s20">
+    <h2>Section 20: Certification Requirements &amp; Process</h2>
+    <p>Certification confirms that the student completed required training, demonstrated required skills, submitted required work, followed ethical standards, and showed readiness to practice within VVP scope.</p>
+    <div class="may-cols">
+      <div><h4>Certification Means</h4><ul>
+        <li>Can explain VVP clearly.</li><li>Can stay within scope.</li><li>Can obtain consent.</li>
+        <li>Can use radiesthetic tools properly.</li><li>Can calibrate before testing.</li>
+        <li>Can perform structured assessments.</li><li>Can rank priorities.</li>
+        <li>Can test correction compatibility.</li><li>Can reassess, stabilize, document, and refer.</li>
+      </ul></div>
+      <div><h4>Certification Does Not Grant</h4><ul>
+        <li>Medical authority.</li><li>Mental health authority.</li><li>Environmental inspection authority.</li>
+        <li>Emergency authority.</li><li>Teaching authority unless separately authorized.</li>
+        <li>Rights to copy, resell, publish, distribute, upload, or transform proprietary VVP materials without written permission.</li>
+      </ul></div>
+    </div>
+    <p>Certification may be approved when training completion, practicum, case studies, skills review, documentation, ethics, scope, referral, and communication requirements are complete and acceptable.</p>
+    <label class="notes-label" for="notes-s20">Fillable Section Notes</label>
+    <textarea class="persist" id="notes-s20" rows="4"></textarea>
+  </section>
+
+  <section class="manual-section" id="s21">
+    <h2>Section 21: Appendices &amp; Resource Library</h2>
+    <p>Volume I appendices remain light and practical. Full client forms belong in Volume II. Full practitioner records belong in Volume III.</p>
+    <h3>Volume I Appendix Contents</h3>
+    <p>Official scope statement · approved and prohibited language quick reference · pendulum response quick reference · calibration checklist · witness handling checklist · red flag referral checklist · volume map · recommended client education resources · final manual disclaimer.</p>
+    <h3>Recommended Client Education Resource</h3>
+    <p>"Introduction to Geopathic Stressors and the Wireless Infrastructure Problem" may be listed as a recommended client education resource for bedroom-first awareness, household load, wireless audit basics, reducing exposure without panic, physical-first safety, and observation over 14–30 days. It supports Section 12 and Section 16 but does not replace the VVP manual.</p>
+    <div class="callout warn"><span class="label">Final Manual Disclaimer</span>This manual is educational and complementary wellness training. It does not diagnose disease, prescribe treatment, replace licensed care, perform psychotherapy, provide emergency services, perform licensed environmental inspection, or guarantee client outcomes.</div>
+  </section>
+
+  <section class="manual-section" id="cert-record">
+    <h2>Fillable Certification Review Record</h2>
+    <p style="font-size:0.88rem; color:var(--ink-mute);">This page supports certification review. Full practitioner client records belong in Volume III. Entries here are saved to this browser only.</p>
+    <div class="field"><label for="cert-student-name">Student Name</label><input class="persist" type="text" id="cert-student-name"></div>
+    <div class="field"><label for="cert-review-date">Review Date</label><input class="persist" type="text" id="cert-review-date"></div>
+    <div class="field"><label for="cert-instructor">Instructor / Authorized Representative</label><input class="persist" type="text" id="cert-instructor"></div>
+    <div class="field"><label for="cert-recommendation">Recommendation</label><input class="persist" type="text" id="cert-recommendation"></div>
+    <h3>Certification Checklist</h3>
+    <ul class="cert-checklist">
+      <li><input class="persist" type="checkbox" id="cert-check-1"><label for="cert-check-1">Training completed</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-2"><label for="cert-check-2">Assignments completed</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-3"><label for="cert-check-3">Practicum completed</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-4"><label for="cert-check-4">Case studies submitted</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-5"><label for="cert-check-5">Scope language demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-6"><label for="cert-check-6">Calibration demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-7"><label for="cert-check-7">Witness protocol demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-8"><label for="cert-check-8">Assessment skills demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-9"><label for="cert-check-9">Correction/reassessment demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-10"><label for="cert-check-10">Referral competency demonstrated</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-11"><label for="cert-check-11">Documentation reviewed</label></li>
+      <li><input class="persist" type="checkbox" id="cert-check-12"><label for="cert-check-12">Certification approved</label></li>
+    </ul>
+  </section>
+
+  <p class="save-note">Notes and checklists on this page are saved automatically to this browser (not synced across devices).</p>
+
+</div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const MODULES = {
+    foundational: [
+      { n: 2, topic: 'Radiesthesia & NTR/Neter', purpose: 'Introduces the foundation of radiesthesia and NTR/Neter language so the student can explain the work clearly and safely.', teaching: 'Radiesthesia is disciplined field response through resonance. NTR/Neter language gives the student a way to speak about formative principles without reducing them to empty mythology.', concepts: ['Radiesthesia','NTR/Neter','Field','Resonance','Controlled perception','Formative principle','Scope-safe explanation'], mustNot: ['The pendulum tells absolute truth.','I diagnosed the problem.','This is fortune-telling.'] },
+      { n: 3, topic: 'Source Gap / Integrity', purpose: 'Documents the missing module honestly and protects the integrity of the sequence.', teaching: 'Module 3 was not available in the source set. This edition does not invent missing curriculum. If Module 3 is recovered or formally written, it may be inserted into a future edition.', concepts: ['Source gap','Integrity','Sequence preservation'], mustNot: ['I am inventing the missing module.','The missing source does not matter.'] },
+      { n: 4, topic: 'Energy Flow & Pendulum Activation', purpose: 'Trains preparation, pendulum activation, calibration, personal wavelength, polarity, response reading, and reassessment.', teaching: 'Accurate testing requires preparation before interpretation. The practitioner clears, centers, calibrates, establishes search position, asks one clear question, observes response, and reassesses.', concepts: ['Pendulum activation','Search position','Calibration','Personal wavelength','Polarity','Baseline','Reassessment'], mustNot: ['The pendulum proved it.','I do not need to calibrate.','The first response is always right.'] },
+      { n: 5, topic: 'Seven Hathors', purpose: 'Teaches students to name and measure vibrational quality and quantity through structured categories of resonance.', teaching: 'The practitioner must not say "only energy" when more precise language is required. The Seven Hathors and Seshat train measurement, quality, quantity, precision, balance, and naming.', concepts: ['Seven Hathors','Seshat','Quality','Quantity','Sound','Color','Shape','Minerals','Plants','Bio-energy'], mustNot: ['It is just energy.','This color cures.','I measured disease.'] },
+      { n: 6, topic: 'Perception as Resonance', purpose: 'Trains the student to understand perception as active resonance between observer and field.', teaching: 'Perception is not passive. The practitioner must separate observation from assumption, test before interpreting, and document uncertainty honestly.', concepts: ['Perception','Observer-field relationship','Observation','Assumption','Interpretation','Uncertainty'], mustNot: ['I saw it, so I know.','My first impression is always correct.','There is no uncertainty.'] },
+      { n: 7, topic: 'Five More Rays', purpose: 'Expands spectrum language beyond ordinary visible color and trains clean testing of subtle qualities.', teaching: 'Vibrational qualities may include ultraviolet, white, negative green, black, infrared, and other subtle rays. The practitioner tests specific qualities without fear language or cure claims.', concepts: ['Ultraviolet','White','Negative Green','Black','Infrared','Ray quality','Before-and-after comparison'], mustNot: ['This color cures.','This ray is always good.','Negative Green is automatically dangerous.'] },
+      { n: 8, topic: 'Geometry, Resonance, Time & Perception', purpose: 'Shows that geometry, rhythm, time, measurement, and perception belong together.', teaching: 'Geometry gives vibration form. Time gives vibration rhythm. The pendulum is not only a detector; it is also a measuring instrument through speed, direction, rhythm, amplitude, and stability.', concepts: ['Geometry','Measure','Time','Rhythm','Pendulum as measuring instrument','Proportion'], mustNot: ['Geometry is only decoration.','Timing does not matter.','All movement only means yes or no.'] },
+      { n: 9, topic: 'Pendulum & Monochord', purpose: 'Connects pendulum response with tuning, string length, harmony, interference, wavelength, and harmonic ratio.', teaching: 'The pendulum and monochord both reveal resonance through tuning. The practitioner should explain response as harmonic behavior, not superstition.', concepts: ['Monochord','String length','Tuning','Harmony','Interference','Amplitude','Frequency','Wavelength'], mustNot: ['The pendulum just knows.','String length never matters.','Discord means disease.'] },
+      { n: 10, topic: 'Torus Energy Key', purpose: 'Teaches toroidal flow as structured motion involving expansion, compression, implosion, radiation, spiral movement, and center.', teaching: 'The torus is a living model of self-returning flow. The practitioner observes flow, stagnation, expansion, contraction, and center without medical claims.', concepts: ['Torus','Toroidal motion','Compression','Expansion','Implosion','Radiation','Spiral','Center'], mustNot: ['The torus fixes everything.','Expansion is always good.','Stagnation means a medical condition.'] },
+      { n: 11, topic: 'Geopathic Stress & Earth Energies', purpose: 'Trains environmental field assessment, bedroom load review, geopathic stress mapping, and physical-first safety discipline.', teaching: 'The environment is not neutral. The land, bedroom, building, wireless field, moisture, wiring, smart meters, routers, and repeated sleep location all belong in assessment. Check physical hazards first.', concepts: ['Geopathic stress','Bedroom load','Underground water','Fault lines','Minerals','Radon','Mold','Wiring','Wireless load','Smart meters','Household map'], mustNot: ['This house is cursed.','This room caused your illness.','The pendulum replaces mold or radon testing.'] },
+      { n: 12, topic: 'Beneficial Energies & Doorways', purpose: 'Balances geopathic stress by teaching students to detect beneficial, grounding, activating, neutral, or draining site responses.', teaching: 'Not all earth-energy sites are harmful. The practitioner must ask: beneficial for what purpose and for what duration?', concepts: ['Beneficial energy','Geo-positive zone','Vortex','Ley line','Doorway','Monolith','Grounding','Activation','Duration'], mustNot: ['This place heals everyone.','All strong energy is good.','This doorway proves supernatural activity.'] },
+      { n: 13, topic: 'Centering Vibration', purpose: 'Trains detection of center, axis, alignment, and stabilization before advanced testing or correction.', teaching: 'The center is the organizing point. Correction without center may amplify confusion. The student must center before complex work.', concepts: ['Center','Axis','Alignment','Coherence','Attention','Breath','Stillness','Search position'], mustNot: ['Centering is optional.','I can test accurately while scattered.','Correction comes before alignment.'] },
+      { n: 14, topic: 'Shape Waves', purpose: 'Teaches that every form emits a wave and that shape, structure, proportion, and orientation generate subtle signatures.', teaching: 'Form speaks. Shape emits. Orientation changes response. The practitioner tests forms carefully and documents comparison.', concepts: ['Shape wave','Form','Emission','Proportion','Orientation','Axis','Center','Comparison'], mustNot: ['This shape cures.','Orientation does not matter.','All shapes work the same for everyone.'] },
+      { n: 15, topic: 'Self-Testing with Shape & Resonance', purpose: 'Requires students to test themselves before attempting practitioner-level work on others.', teaching: 'Self-testing develops humility, baseline discipline, bias awareness, chart responsibility, correction selection, reassessment, and documentation.', concepts: ['Self-testing','Baseline','Anatomy chart','Color reference','Correction tool','Bias awareness','Documentation'], mustNot: ['This chart diagnosed me.','I can skip self-testing.','A weak response means disease.'] }
+    ],
+    advanced: [
+      { n: 16, topic: 'Magnetism & Radiesthesia', purpose: 'Teaches magnetism as an organizing structure of orientation, polarity, direction, attraction, repulsion, and field behavior.', teaching: 'Orientation matters. The practitioner must understand polarity, axis, chart placement, tool alignment, and response direction without turning magnetic language into diagnosis.', concepts: ['Magnetism','Polarity','Orientation','Axis','North','South','Attraction','Repulsion','Tool alignment'], mustNot: ['Orientation does not matter.','This is a magnetic diagnosis.','Polarity is always good or bad.'] },
+      { n: 17, topic: 'Magnetic Genesis of Form', purpose: 'Moves the student from observation into responsible understanding of influence through shape, sound, geometry, and field behavior.', teaching: 'Form is organized motion. Sound, shape, field, geometry, and magnetism can influence response. Influence requires consent.', concepts: ['Form','Motion','Shape','Sound','Field influence','Geometry','Consent','Observation vs correction'], mustNot: ['I can influence anything without permission.','Detection gives permission to correct.','This sound forces transformation.'] },
+      { n: 18, topic: 'Magnetic North & Polarization', purpose: 'Teaches magnetic north, axis, polarization, chart orientation, body axis, tool axis, and spectrum discipline.', teaching: 'The practitioner must know what axis is being used. Without orientation, the result may be unclear or misread.', concepts: ['Magnetic north','Polarization','Axis','Compass','Chart orientation','Tool axis','Color qualities'], mustNot: ['Direction is irrelevant.','The spectrum is random.','I can place charts however I want.'] },
+      { n: 19, topic: 'Monad, Dyad, Triad & UCQ', purpose: 'Teaches triadic field architecture through Monad, Dyad, Triad, and Universal Centering Qualities.', teaching: 'Monad is undivided source, Dyad is polarity and relationship, Triad is stabilizing coherence. UCQ is field architecture, not race, skin color, pigment diagnosis, or medical biology.', concepts: ['Monad','Dyad','Triad','UCQ','Polarity','Coherence','Melanin as field principle','Scope discipline'], mustNot: ['This is about skin color.','This diagnoses pigment.','This proves biology or genetics.'] },
+      { n: 20, topic: 'Harmonic Shells / Aura', purpose: 'Teaches the aura as structured, layered, multi-octave field architecture rather than vague glow language.', teaching: 'A harmonic shell is a layered field structure that transmits, receives, filters, and organizes resonance. The practitioner tests one layer at a time.', concepts: ['Aura','Harmonic shells','Layered field','Multi-octave resonance','Field gap','Shell distortion'], mustNot: ['I diagnosed your aura.','A dark response means evil.','A weak shell means illness.'] },
+      { n: 21, topic: 'Human Grid & Platonic Solids', purpose: 'Teaches the human form as a multi-layer grid of proportion, archetypal nodes, elemental forces, and geometric structures.', teaching: 'The body can be read as a resonance map using axis, nodes, layers, proportions, and Platonic Solids, without turning maps into diagnosis.', concepts: ['Human grid','Node','Proportion','Axis','Platonic Solids','Cube','Tetrahedron','Octahedron','Icosahedron','Dodecahedron'], mustNot: ['This grid diagnosed you.','This node proves disease.','Platonic Solids automatically cure.'] },
+      { n: 22, topic: 'Crystal Tools', purpose: 'Teaches crystals as structured geometric instruments requiring clearing, orientation, compatibility testing, and documentation.', teaching: 'Crystals are not decorations or magic shortcuts. They must be cleared, tested, oriented, applied responsibly, reassessed, and documented.', concepts: ['Crystal tool','Structured geometry','Clearing','Orientation','Compatibility','Amplification','Stabilization'], mustNot: ['This crystal cures.','All crystals are good.','I can use my favorite crystal without testing.'] },
+      { n: 23, topic: 'Chestahedron', purpose: 'Teaches the Chestahedron as a seven-faced field instrument of heart-centered coherence and love as precision.', teaching: 'Love is not sentimental vagueness; love is ordered relationship, coherence, and field precision. The Chestahedron must be tested like any other field instrument.', concepts: ['Chestahedron','Sevenfold order','Love as precision','Heart-centered coherence','Field instrument','Stabilization'], mustNot: ['Love fixes everything.','The Chestahedron cures.','It works without testing.'] },
+      { n: 24, topic: 'Conscious Emission', purpose: 'Trains advanced intentional influence through breath, body, tools, witnesses, geometry, charts, symbols, mantras, and field design.', teaching: 'Conscious emission requires consent, baseline, clear intention, witness setup, compatibility testing, correction, confirmation, sealing, stabilization, and documentation.', concepts: ['Conscious emission','Field design','Consent','Witness','Clear intention','Compatibility','Confirmation','Sealing','Stabilization'], mustNot: ['I can broadcast into anyone.','Sealing is optional.','My intention alone is enough.'] },
+      { n: 25, topic: 'Melanin Pendulum', purpose: 'Introduces the Melanin Pendulum as a specialized resonance-quality field instrument used only within strict VVP scope.', teaching: 'The Melanin Pendulum reads resonance quality and organized field coherence. It is not a race, pigment, genetic, medical, disease, or biological diagnostic tool.', concepts: ['Melanin Pendulum','Resonance quality','Human field','Planetary field','Coherence','Calibration','Question discipline','Scope discipline'], mustNot: ['This diagnoses melanin.','This is about skin color.','This proves disease or genetics.'] }
+    ]
+  };
+
+  function renderModules(groupKey, listId) {
+    const list = document.getElementById(listId);
+    MODULES[groupKey].forEach(function (m) {
+      const li = document.createElement('li');
+      const chips = m.concepts.map(function (c) { return '<span class="chip">' + c + '</span>'; }).join('');
+      const mustNot = m.mustNot.map(function (s) { return '<li>' + s + '</li>'; }).join('');
+      li.innerHTML =
+        '<details class="module" id="module-' + m.n + '">' +
+          '<summary><span class="tag">Module ' + m.n + '</span> ' + m.topic + '</summary>' +
+          '<div class="body">' +
+            '<p><strong>Module Purpose:</strong> ' + m.purpose + '</p>' +
+            '<p><strong>Core Teaching:</strong> ' + m.teaching + '</p>' +
+            '<div class="chips">' + chips + '</div>' +
+            '<div class="callout warn"><span class="label">Student Must Not Say</span><ul style="margin:6px 0 0; padding-left:18px;">' + mustNot + '</ul></div>' +
+            '<div class="knowledge-check">' +
+              '<label for="m' + m.n + '-q1">What is the central teaching of this module?</label>' +
+              '<input class="persist" type="text" id="m' + m.n + '-q1">' +
+              '<label for="m' + m.n + '-q2">What skill does this module train?</label>' +
+              '<input class="persist" type="text" id="m' + m.n + '-q2">' +
+              '<label for="m' + m.n + '-q3">Write one scope-safe statement.</label>' +
+              '<input class="persist" type="text" id="m' + m.n + '-q3">' +
+              '<label for="m' + m.n + '-q4">Practice or demonstration completed / instructor notes</label>' +
+              '<textarea class="persist" id="m' + m.n + '-q4" rows="2"></textarea>' +
+            '</div>' +
+          '</div>' +
+        '</details>';
+      list.appendChild(li);
+    });
+  }
+
+  renderModules('foundational', 'module-list-foundational');
+  renderModules('advanced', 'module-list-advanced');
+
+  document.querySelectorAll('.persist').forEach(function (el) {
+    const key = 'vvp-manual-' + el.id;
+    const saved = localStorage.getItem(key);
+    if (saved !== null) {
+      if (el.type === 'checkbox') el.checked = saved === '1';
+      else el.value = saved;
+    }
+    const evt = (el.tagName === 'SELECT' || el.type === 'checkbox') ? 'change' : 'input';
+    el.addEventListener(evt, function () {
+      localStorage.setItem(key, el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value);
+    });
+  });
+
+  document.getElementById('jump-select').addEventListener('change', function () {
+    if (this.value) {
+      document.getElementById(this.value).scrollIntoView({ behavior: 'smooth', block: 'start' });
+      this.value = '';
+    }
+  });
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shellRoot = document.getElementById('shell');
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+      return;
+    }
+    sb.from('profiles')
+      .select('role')
+      .eq('id', data.session.user.id)
+      .single()
+      .then(({ data: profile, error }) => {
+        if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+          window.location.href = 'login.html';
+          return;
+        }
+        checking.hidden = true;
+        shellRoot.hidden = false;
+      });
+  });
+})();
+</script>
+</body>
+</html>
