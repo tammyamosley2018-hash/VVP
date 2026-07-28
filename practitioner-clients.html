@@ -53,8 +53,15 @@
     gap: 14px;
     flex-wrap: wrap;
   }
+  .client-row .info { display: flex; align-items: center; gap: 14px; }
   .client-row .info .name { font-weight: 600; color: var(--ink); }
   .client-row .info .meta { color: var(--ink-mute); font-size: 0.85rem; margin-top: 2px; }
+  .avatar-btn {
+    width: 44px; height: 44px; flex: none; border-radius: 50%;
+    border: 1.5px solid var(--line); background: var(--sand) center/cover no-repeat;
+    color: var(--ink-mute); font-weight: 600; font-size: 0.8rem; cursor: pointer; padding: 0;
+  }
+  .avatar-btn:hover { border-color: var(--gold); }
   .client-row .actions a {
     font: inherit;
     font-weight: 600;
@@ -92,6 +99,7 @@
   <div id="empty" class="empty" hidden>No clients yet. Clients are added automatically the first time you send them an intake.</div>
   <div id="list"></div>
 </div>
+<input type="file" id="avatar-input" accept="image/*" hidden>
 
 <footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
 
@@ -115,6 +123,11 @@
     return String(str == null ? '' : str).replace(/"/g, '&quot;');
   }
 
+  function initials(name) {
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+
   function renderClient(client) {
     const row = document.createElement('div');
     row.className = 'client-row';
@@ -123,8 +136,13 @@
     const resultsUrl = 'upload-client-results.html?client_id=' + encodeURIComponent(client.id);
     row.innerHTML =
       '<div class="info">' +
-        '<div class="name">' + escapeAttr(client.full_name) + '</div>' +
-        '<div class="meta">' + escapeAttr(client.email) + (client.phone ? ' · ' + escapeAttr(client.phone) : '') + ' · Client since ' + memberSince + '</div>' +
+        '<button type="button" class="avatar-btn" data-client-id="' + escapeAttr(client.id) + '" title="Update photo"' +
+          (client.avatar_url ? ' style="background-image:url(\'' + escapeAttr(client.avatar_url) + '\')"' : '') +
+          '>' + (client.avatar_url ? '' : escapeAttr(initials(client.full_name))) + '</button>' +
+        '<div>' +
+          '<div class="name">' + escapeAttr(client.full_name) + '</div>' +
+          '<div class="meta">' + escapeAttr(client.email) + (client.phone ? ' · ' + escapeAttr(client.phone) : '') + ' · Client since ' + memberSince + '</div>' +
+        '</div>' +
       '</div>' +
       '<div class="actions"><a href="' + resultsUrl + '">Add results</a><a href="' + sendUrl + '">Send another intake</a></div>';
     return row;
@@ -165,6 +183,38 @@
             clients.forEach((client) => list.appendChild(renderClient(client)));
           });
       });
+  });
+
+  const avatarInput = document.getElementById('avatar-input');
+  let pendingClientId = null;
+
+  list.addEventListener('click', (e) => {
+    const btn = e.target.closest('.avatar-btn');
+    if (!btn) return;
+    pendingClientId = btn.dataset.clientId;
+    avatarInput.click();
+  });
+
+  avatarInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file || !pendingClientId) return;
+    const clientId = pendingClientId;
+    const ext = file.name.split('.').pop();
+    const path = 'client/' + clientId + '/avatar.' + ext;
+
+    sb.storage.from('avatars').upload(path, file, { upsert: true }).then(({ error }) => {
+      if (error) { showError('Photo upload failed: ' + error.message); return; }
+      const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
+      const url = pub.publicUrl + '?t=' + Date.now();
+      sb.from('clients').update({ avatar_url: url }).eq('id', clientId).then(() => {
+        const btn = list.querySelector('.avatar-btn[data-client-id="' + clientId + '"]');
+        if (btn) {
+          btn.style.backgroundImage = "url('" + url + "')";
+          btn.textContent = '';
+        }
+      });
+    });
+    avatarInput.value = '';
   });
 })();
 </script>
