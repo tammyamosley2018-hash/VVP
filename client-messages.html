@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Messages — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 640px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.5rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .thread-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 18px; min-height: 200px; max-height: 55vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .msg-empty { color: var(--ink-mute); font-size: 0.9rem; text-align: center; margin-top: 40px; }
+  .msg-bubble { max-width: 82%; padding: 10px 14px; border-radius: 10px; font-size: 0.9rem; line-height: 1.45; }
+  .msg-bubble.outbound { align-self: flex-end; background: var(--gold); color: var(--navy); }
+  .msg-bubble.inbound { align-self: flex-start; background: var(--sand); color: var(--ink); }
+  .msg-meta { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; margin-top: 4px; }
+
+  .send-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  .send-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .send-row select { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--parchment); }
+  .send-row textarea { flex: 1; font: inherit; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--parchment); resize: vertical; min-height: 44px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Messages</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1 id="client-name-heading">Messages</h1>
+    <a href="practitioner-clients.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to clients</a>
+  </div>
+
+  <div id="message" class="message error" role="alert" hidden></div>
+
+  <div class="thread-card" id="thread"><p class="msg-empty">Loading…</p></div>
+
+  <div class="send-card">
+    <div class="send-row">
+      <select id="channel-select">
+        <option value="sms">SMS</option>
+        <option value="email">Email</option>
+      </select>
+      <textarea id="body-input" placeholder="Type a message…"></textarea>
+    </div>
+    <button type="button" class="btn-gold" id="send-btn" style="width:auto; padding:10px 22px;">Send</button>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const params = new URLSearchParams(window.location.search);
+  const clientId = params.get('client_id');
+
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const message = document.getElementById('message');
+  const thread = document.getElementById('thread');
+  const sendBtn = document.getElementById('send-btn');
+  const bodyInput = document.getElementById('body-input');
+  const channelSelect = document.getElementById('channel-select');
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  function renderThread(rows) {
+    if (!rows || !rows.length) {
+      thread.innerHTML = '<p class="msg-empty">No messages yet.</p>';
+      return;
+    }
+    thread.innerHTML = rows.map((m) => {
+      const when = new Date(m.created_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+      return '<div class="msg-bubble ' + m.direction + '">' + m.body.replace(/</g, '&lt;') +
+        '<div class="msg-meta">' + m.channel.toUpperCase() + ' · ' + when + '</div></div>';
+    }).join('');
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function loadThread() {
+    sb.from('client_messages').select('*').eq('client_id', clientId)
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (error) { showError('Could not load messages: ' + error.message); return; }
+        renderThread(data);
+      });
+  }
+
+  if (!clientId) {
+    showError('No client selected.');
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) { window.location.href = 'login.html'; return; }
+
+    sb.from('profiles').select('role').eq('id', data.session.user.id).single().then(({ data: profile, error }) => {
+      if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      checking.hidden = true;
+      shell.hidden = false;
+
+      if (clientId) {
+        sb.from('clients').select('full_name').eq('id', clientId).single().then(({ data: client }) => {
+          if (client) document.getElementById('client-name-heading').textContent = 'Messages with ' + client.full_name;
+        });
+        loadThread();
+      }
+    });
+  });
+
+  sendBtn.addEventListener('click', () => {
+    const body = bodyInput.value.trim();
+    if (!body || !clientId) return;
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
+
+    sb.functions.invoke('send-client-message', {
+      body: { client_id: clientId, channel: channelSelect.value, body },
+    }).then(({ data, error }) => {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'Send';
+
+      if (error) { showError('Send failed: ' + error.message); return; }
+      if (data && data.error) { showError('Send failed: ' + data.error); return; }
+
+      bodyInput.value = '';
+      loadThread();
+    });
+  });
+})();
+</script>
+</body>
+</html>

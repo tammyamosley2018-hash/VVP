@@ -33,8 +33,10 @@ create table if not exists clients (
   full_name text not null,
   email text not null,
   phone text,
+  ghl_contact_id text,
   created_at timestamptz not null default now()
 );
+create unique index if not exists clients_ghl_contact_id_key on clients(ghl_contact_id) where ghl_contact_id is not null;
 
 create table if not exists intake_requests (
   id uuid primary key default gen_random_uuid(),
@@ -79,6 +81,21 @@ create table if not exists client_results (
   reading_id uuid references practitioner_readings(id) on delete set null,
   result_data jsonb,
   visible_to_client boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- Practitioner<->client SMS/Email thread, sent via GoHighLevel's Conversations
+-- API on both ends. Practitioners never get GHL inbox access for this on
+-- purpose -- RLS here is what actually keeps one practitioner's (or the
+-- other business's) conversations invisible to everyone else, rather than
+-- relying on GHL's own per-user permission settings.
+create table if not exists client_messages (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references clients(id) on delete cascade,
+  practitioner_id uuid not null references practitioners(id) on delete cascade,
+  direction text not null check (direction in ('outbound', 'inbound')),
+  channel text not null check (channel in ('sms', 'email')),
+  body text not null,
   created_at timestamptz not null default now()
 );
 
@@ -142,6 +159,7 @@ alter table intake_requests enable row level security;
 alter table client_intake_submissions enable row level security;
 alter table practitioner_readings enable row level security;
 alter table client_results enable row level security;
+alter table client_messages enable row level security;
 
 -- Helper: is the current user an admin?
 create or replace function is_admin()
@@ -230,6 +248,14 @@ create policy "results_insert_own_practitioner" on client_results
 create policy "results_update_own_practitioner" on client_results
   for update using (practitioner_id = current_practitioner_id());
 
+-- client_messages: practitioner sees/sends only their own clients' threads;
+-- admins see all. No anon/client policy -- inbound rows are inserted only
+-- via the SECURITY DEFINER record_inbound_message() function below.
+create policy "messages_select_own_or_admin" on client_messages
+  for select using (practitioner_id = current_practitioner_id() or is_admin());
+create policy "messages_insert_own_practitioner" on client_messages
+  for insert with check (practitioner_id = current_practitioner_id());
+
 -- ============================================================
 -- SECURE TOKEN FUNCTIONS
 -- These run as SECURITY DEFINER (owner privileges), so they bypass RLS
@@ -313,6 +339,55 @@ end;
 $$;
 
 grant execute on function submit_client_intake(text, jsonb) to anon, authenticated;
+
+-- 3. Record an inbound reply from a client. Called by n8n (anon key only --
+--    no service_role key ever handed to n8n) after GHL's "Customer replied"
+--    workflow webhook fires. Resolves the client purely from the GHL contact
+--    id, so n8n never needs to know or pass along a practitioner_id.
+create or replace function record_inbound_message(p_ghl_contact_id text, p_channel text, p_body text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_client clients%rowtype;
+  v_message_id uuid;
+begin
+  select * into v_client from clients where ghl_contact_id = p_ghl_contact_id;
+
+  if v_client.id is null then
+    raise exception 'No client found for GHL contact %', p_ghl_contact_id;
+  end if;
+
+  insert into client_messages (client_id, practitioner_id, direction, channel, body)
+  values (v_client.id, v_client.practitioner_id, 'inbound', p_channel, p_body)
+  returning id into v_message_id;
+
+  return v_message_id;
+end;
+$$;
+
+grant execute on function record_inbound_message(text, text, text) to anon, authenticated;
+
+-- 4. Link a client to their GHL contact id. Called by n8n right after the
+--    existing contact-upsert step, using the same practitioner_id +
+--    client_email identity key already used for is_first_submission --
+--    n8n never needs our internal client_id at all.
+create or replace function link_ghl_contact(p_practitioner_id uuid, p_client_email text, p_ghl_contact_id text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update clients
+  set ghl_contact_id = p_ghl_contact_id
+  where practitioner_id = p_practitioner_id and email = p_client_email;
+end;
+$$;
+
+grant execute on function link_ghl_contact(uuid, text, text) to anon, authenticated;
 
 -- ============================================================
 -- N8N NOTIFICATION ON NEW INTAKE SUBMISSION

@@ -134,6 +134,7 @@
     const memberSince = new Date(client.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     const sendUrl = 'send-intake.html?name=' + encodeURIComponent(client.full_name || '') + '&email=' + encodeURIComponent(client.email || '');
     const resultsUrl = 'upload-client-results.html?client_id=' + encodeURIComponent(client.id);
+    const messagesUrl = 'client-messages.html?client_id=' + encodeURIComponent(client.id);
     row.innerHTML =
       '<div class="info">' +
         '<button type="button" class="avatar-btn" data-client-id="' + escapeAttr(client.id) + '" title="Update photo"' +
@@ -144,7 +145,7 @@
           '<div class="meta">' + escapeAttr(client.email) + (client.phone ? ' · ' + escapeAttr(client.phone) : '') + ' · Client since ' + memberSince + '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="actions"><a href="' + resultsUrl + '">Add results</a><a href="' + sendUrl + '">Send another intake</a></div>';
+      '<div class="actions"><a href="' + messagesUrl + '">Message</a><a href="' + resultsUrl + '">Add results</a><a href="' + sendUrl + '">Send another intake</a></div>';
     return row;
   }
 
