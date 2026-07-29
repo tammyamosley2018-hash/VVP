@@ -18,13 +18,17 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is required');
 if (!SUPABASE_URL) throw new Error('SUPABASE_URL is required');
 
-// Prefer JWT Signing Keys / publishable keys approach.
-// Your Edge Function can read publishable keys from env.
+// Newer projects expose SUPABASE_PUBLISHABLE_KEYS; older ones only have the
+// legacy SUPABASE_ANON_KEY. Support both rather than requiring one specific
+// key system, since we can't control which one this project has enabled.
 const SUPABASE_PUBLISHABLE_KEYS_RAW = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS');
-if (!SUPABASE_PUBLISHABLE_KEYS_RAW)
-  throw new Error('SUPABASE_PUBLISHABLE_KEYS is required');
-
-const SUPABASE_PUBLISHABLE_KEYS = JSON.parse(SUPABASE_PUBLISHABLE_KEYS_RAW);
+const LEGACY_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_PUBLISHABLE_KEYS = SUPABASE_PUBLISHABLE_KEYS_RAW
+  ? JSON.parse(SUPABASE_PUBLISHABLE_KEYS_RAW)
+  : null;
+if (!SUPABASE_PUBLISHABLE_KEYS && !LEGACY_ANON_KEY) {
+  throw new Error('Neither SUPABASE_PUBLISHABLE_KEYS nor SUPABASE_ANON_KEY is set');
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,14 +60,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    // IMPORTANT: choose which publishable key name to use.
-    // This code assumes the key named "default" exists. If it doesn't,
-    // tell me what your publishable key name is (the one you want to use).
-    const publishableKey = SUPABASE_PUBLISHABLE_KEYS['default'];
+    const publishableKey = SUPABASE_PUBLISHABLE_KEYS?.['default'] || LEGACY_ANON_KEY;
     if (!publishableKey) {
-      throw new Error(
-        'SUPABASE_PUBLISHABLE_KEYS["default"] not found. Use the correct key name in code.'
-      );
+      throw new Error('No usable Supabase client key found in this project\'s env vars.');
     }
 
     // Use the caller's Authorization JWT so RLS applies as that user.
