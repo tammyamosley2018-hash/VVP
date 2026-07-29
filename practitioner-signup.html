@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Create Your Practitioner Account — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-cream.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 420px; margin: 0 auto; padding: 60px 20px 80px; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 32px 30px 34px;
+  }
+  .card h1 { font-size: 1.6rem; margin: 0 0 8px; }
+  .card .hint { color: var(--ink-mute); font-size: 0.9rem; margin: 0 0 26px; }
+  .footnote { text-align: center; font-size: 0.85rem; color: var(--ink-mute); margin-top: 18px; }
+  .result-glyph {
+    width: 44px; height: 44px; margin: 0 auto 16px;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gold);
+    font-family: 'Fraunces', serif;
+    font-size: 1.3rem;
+  }
+  #confirmation { text-align: center; }
+  #confirmation h1 { font-size: 1.4rem; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Create Your Practitioner Account</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <div id="card" class="card">
+    <h1>Create your practitioner account</h1>
+    <p class="hint">Use the email address VVP has on file for you as a commissioned practitioner — it's how we connect your login to your practitioner profile.</p>
+
+    <div id="message" class="message error" role="alert" hidden></div>
+
+    <form id="signup-form" novalidate>
+      <div class="field">
+        <label for="full_name">Full name</label>
+        <input type="text" id="full_name" name="full_name" required autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="new-password" minlength="6">
+      </div>
+      <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required autocomplete="new-password" minlength="6">
+      </div>
+      <button type="submit" class="btn-gold" id="submit-btn">Create account</button>
+    </form>
+
+    <p class="footnote">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+
+  <div id="confirmation" class="card" hidden>
+    <div class="result-glyph">✓</div>
+    <h1>Check your email</h1>
+    <p>We've sent a confirmation link to <strong id="confirmation-email"></strong>. Click it to activate your account, then come back and log in.</p>
+    <p class="footnote">Don't see it? Check your spam folder, or make sure the email matches what VVP has on file for you.</p>
+  </div>
+
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const card = document.getElementById('card');
+  const confirmation = document.getElementById('confirmation');
+  const message = document.getElementById('message');
+  const form = document.getElementById('signup-form');
+  const submitBtn = document.getElementById('submit-btn');
+
+  function showError(text) {
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    message.hidden = true;
+
+    if (!form.reportValidity()) return;
+
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    const fullName = document.getElementById('full_name').value.trim();
+
+    if (password !== confirmPassword) {
+      showError("Those passwords don't match.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account…';
+
+    sb.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: { full_name: fullName, role: 'practitioner' },
+        emailRedirectTo: new URL('login.html', window.location.href).href,
+      },
+    }).then(({ error }) => {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account';
+
+      if (error) {
+        showError(error.message || 'Something went wrong creating your account. Try again.');
+        return;
+      }
+
+      document.getElementById('confirmation-email').textContent = email;
+      card.hidden = true;
+      confirmation.hidden = false;
+    });
+  });
+})();
+</script>
+</body>
+</html>

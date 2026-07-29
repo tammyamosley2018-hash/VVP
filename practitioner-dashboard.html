@@ -153,7 +153,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5Z"/></svg>
         Courses
       </a>
-      <span class="soon"><span style="display:flex;align-items:center;gap:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendar</span><span class="pill">Soon</span></span>
+      <a id="calendar-nav-link" href="#" target="_blank" rel="noopener" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        Calendar
+      </a>
+      <span class="soon" id="calendar-nav-soon"><span style="display:flex;align-items:center;gap:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendar</span><span class="pill">Soon</span></span>
       <span class="soon"><span style="display:flex;align-items:center;gap:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;"><path d="M4 5h16v11H8l-4 4Z"/></svg>Messages</span><span class="pill">Soon</span></span>
       <span class="soon"><span style="display:flex;align-items:center;gap:11px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>Analytics</span><span class="pill">Soon</span></span>
       <a href="https://thedylmethod.com/products-list/collections/energy-work-tools" target="_blank" rel="noopener">
@@ -298,7 +302,7 @@
         return;
       }
 
-      sb.from('practitioners').select('id, full_name, avatar_url').eq('user_id', userId).single().then(({ data: prac }) => {
+      sb.from('practitioners').select('id, full_name, avatar_url, booking_url').eq('user_id', userId).single().then(({ data: prac }) => {
         const displayName = (prac && prac.full_name) || profile.full_name || data.session.user.email;
         practitionerId = prac ? prac.id : null;
 
@@ -312,6 +316,13 @@
           avatarBtn.textContent = '';
         } else {
           avatarBtn.textContent = initials(displayName);
+        }
+
+        if (prac && prac.booking_url) {
+          const calLink = document.getElementById('calendar-nav-link');
+          calLink.href = prac.booking_url;
+          calLink.hidden = false;
+          document.getElementById('calendar-nav-soon').hidden = true;
         }
 
         checking.hidden = true;

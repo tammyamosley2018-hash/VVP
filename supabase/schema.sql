@@ -115,6 +115,13 @@ begin
     update clients set user_id = new.id where email = new.email and user_id is null;
   end if;
 
+  -- Same pattern for practitioners: Tammy pre-creates a practitioners row
+  -- (name, email, booking_url, etc.) before the practitioner ever signs up
+  -- themselves; this links their new auth account to that existing row.
+  if v_role = 'practitioner' then
+    update practitioners set user_id = new.id where email = new.email and user_id is null;
+  end if;
+
   return new;
 end;
 $$;
@@ -349,6 +356,7 @@ begin
       'practitioner_id', new.practitioner_id,
       'practitioner_email', v_practitioner.email,
       'practitioner_name', v_practitioner.full_name,
+      'practitioner_booking_url', v_practitioner.booking_url,
       'client_name', new.client_name,
       'client_email', new.client_email,
       'client_phone', new.form_data ->> 'phone',
@@ -365,6 +373,22 @@ drop trigger if exists on_intake_submission_notify_n8n on client_intake_submissi
 create trigger on_intake_submission_notify_n8n
   after insert on client_intake_submissions
   for each row execute function notify_n8n_on_intake_submission();
+
+-- ============================================================
+-- PER-PRACTITIONER BOOKING LINK + PRE-CREATED PRACTITIONER ONBOARDING
+-- Each practitioner has their own GHL calendar/booking widget URL.
+-- Mirrors the existing clients.user_id pattern: Tammy can now
+-- pre-create a practitioners row (name, email, booking_url) before
+-- that person has ever signed up, and handle_new_user() links it to
+-- their real auth account the moment they self-serve sign up with a
+-- matching email (see the updated trigger above). Column/constraint
+-- changes only — actual practitioner data is real people's info and
+-- gets set with a one-off UPDATE, never committed as literal data in
+-- this schema file.
+-- ============================================================
+
+alter table practitioners alter column user_id drop not null;
+alter table practitioners add column if not exists booking_url text;
 
 -- ============================================================
 -- PROFILE PHOTOS
