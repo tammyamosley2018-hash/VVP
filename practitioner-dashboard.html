@@ -61,6 +61,48 @@
   .profile-chip .who .role { font-size: 0.72rem; color: var(--crystal-pale); text-transform: uppercase; letter-spacing: 0.05em; }
   .signout-link { background: none; border: none; color: var(--crystal-pale); font: inherit; font-size: 0.82rem; cursor: pointer; text-decoration: underline; }
 
+  .senna-toggle {
+    display: flex; align-items: center; gap: 8px; font: inherit; font-weight: 600; font-size: 0.85rem;
+    background: var(--navy-soft); color: var(--gold-bright); border: 1px solid #26365C;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  }
+  .senna-toggle:hover { border-color: var(--gold); }
+  .senna-toggle svg { width: 16px; height: 16px; }
+
+  .senna-panel {
+    position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 92vw;
+    background: #0A1226; border-left: 1px solid var(--navy-soft);
+    z-index: 40; display: flex; flex-direction: column;
+    box-shadow: -20px 0 40px rgba(0,0,0,0.35);
+  }
+  .senna-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 18px; border-bottom: 1px solid var(--navy-soft);
+    font-family: 'Fraunces', serif; color: var(--gold-bright); font-size: 1.05rem;
+  }
+  .senna-header button { background: none; border: none; color: var(--crystal-pale); font-size: 1.1rem; cursor: pointer; }
+  .senna-client-select { padding: 10px 14px; border-bottom: 1px solid var(--navy-soft); }
+  .senna-client-select select {
+    width: 100%; font: inherit; font-size: 0.82rem; padding: 7px 9px; border-radius: 8px;
+    background: var(--navy-soft); color: var(--parchment); border: 1px solid #26365C;
+  }
+  .senna-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .senna-msg { font-size: 0.86rem; line-height: 1.5; padding: 10px 12px; border-radius: 10px; max-width: 90%; white-space: pre-wrap; }
+  .senna-msg.user { align-self: flex-end; background: var(--gold); color: var(--navy); }
+  .senna-msg.assistant { align-self: flex-start; background: var(--navy-soft); color: var(--parchment); }
+  .senna-msg.error { align-self: flex-start; background: #3A1E1E; color: #F3B4B4; }
+  .senna-empty { color: var(--crystal-pale); font-size: 0.82rem; text-align: center; margin-top: 30px; }
+  .senna-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--navy-soft); }
+  .senna-form input {
+    flex: 1; font: inherit; font-size: 0.85rem; padding: 9px 12px; border-radius: 8px;
+    background: var(--navy-soft); color: var(--parchment); border: 1px solid #26365C;
+  }
+  .senna-form button {
+    font: inherit; font-weight: 600; font-size: 0.85rem; background: var(--gold); color: var(--navy);
+    border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  }
+  .senna-form button:disabled { opacity: 0.6; cursor: default; }
+
   .dash-content { padding: 26px 28px 70px; max-width: 1180px; position: relative; z-index: 1; }
 
   .hero-banner {
@@ -170,6 +212,10 @@
 
   <div class="dash-main">
     <div class="dash-topbar">
+      <button type="button" class="senna-toggle" id="senna-toggle-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4Z"/><path d="M19 15l.9 2.2L22 18l-2.1.8L19 21l-.9-2.2L16 18l2.1-.8Z"/></svg>
+        AI Assistant
+      </button>
       <div class="profile-chip">
         <button type="button" class="avatar-btn" id="avatar-btn" title="Update your photo">?</button>
         <input type="file" id="avatar-input" accept="image/*" hidden>
@@ -273,6 +319,25 @@
 
     </div>
   </div>
+</div>
+
+<div class="senna-panel" id="senna-panel" hidden>
+  <div class="senna-header">
+    <span>✨ Senna AI Assistant</span>
+    <button type="button" id="senna-close-btn" aria-label="Close">&times;</button>
+  </div>
+  <div class="senna-client-select">
+    <select id="senna-client-select">
+      <option value="">General question (no client)</option>
+    </select>
+  </div>
+  <div class="senna-messages" id="senna-messages">
+    <p class="senna-empty">Ask about VVP protocols, or pick a client above and ask for a summary of their records.</p>
+  </div>
+  <form class="senna-form" id="senna-form">
+    <input type="text" id="senna-input" placeholder="Ask Senna…" autocomplete="off">
+    <button type="submit" id="senna-send-btn">Send</button>
+  </form>
 </div>
 
 <script>
@@ -401,6 +466,73 @@
 
   document.getElementById('sign-out-btn').addEventListener('click', () => {
     sb.auth.signOut().then(() => { window.location.href = 'login.html'; });
+  });
+
+  const sennaPanel = document.getElementById('senna-panel');
+  const sennaMessages = document.getElementById('senna-messages');
+  const sennaForm = document.getElementById('senna-form');
+  const sennaInput = document.getElementById('senna-input');
+  const sennaSendBtn = document.getElementById('senna-send-btn');
+  const sennaClientSelect = document.getElementById('senna-client-select');
+  let sennaClientsLoaded = false;
+
+  document.getElementById('senna-toggle-btn').addEventListener('click', () => {
+    sennaPanel.hidden = false;
+    if (!sennaClientsLoaded && practitionerId) {
+      sennaClientsLoaded = true;
+      sb.from('clients').select('id, full_name').eq('practitioner_id', practitionerId)
+        .order('full_name').then(({ data }) => {
+          (data || []).forEach((c) => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.full_name;
+            sennaClientSelect.appendChild(opt);
+          });
+        });
+    }
+  });
+
+  document.getElementById('senna-close-btn').addEventListener('click', () => {
+    sennaPanel.hidden = true;
+  });
+
+  function addSennaMessage(text, cls) {
+    const emptyNote = sennaMessages.querySelector('.senna-empty');
+    if (emptyNote) emptyNote.remove();
+    const bubble = document.createElement('div');
+    bubble.className = 'senna-msg ' + cls;
+    bubble.textContent = text;
+    sennaMessages.appendChild(bubble);
+    sennaMessages.scrollTop = sennaMessages.scrollHeight;
+  }
+
+  sennaForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = sennaInput.value.trim();
+    if (!text) return;
+
+    addSennaMessage(text, 'user');
+    sennaInput.value = '';
+    sennaInput.disabled = true;
+    sennaSendBtn.disabled = true;
+
+    const clientId = sennaClientSelect.value || undefined;
+
+    sb.functions.invoke('senna-assistant', { body: { message: text, client_id: clientId } })
+      .then(({ data, error }) => {
+        sennaInput.disabled = false;
+        sennaSendBtn.disabled = false;
+        sennaInput.focus();
+        if (error) {
+          addSennaMessage("Senna couldn't respond: " + error.message, 'error');
+          return;
+        }
+        if (data && data.error) {
+          addSennaMessage("Senna couldn't respond: " + data.error, 'error');
+          return;
+        }
+        addSennaMessage((data && data.reply) || '(No response)', 'assistant');
+      });
   });
 })();
 </script>
