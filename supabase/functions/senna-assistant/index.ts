@@ -10,10 +10,21 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-const MANUAL_URL = 'https://tammyamosley2018-hash.github.io/VVP/assets/data/vvp-manual-content.txt';
+const MANUAL_URL =
+  'https://tammyamosley2018-hash.github.io/VVP/assets/data/vvp-manual-content.txt';
+
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
-const SUPABASE_PUBLISHABLE_KEY = JSON.parse(Deno.env.get('SUPABASE_PUBLISHABLE_KEYS')!)['default'];
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+if (!ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY is required');
+if (!SUPABASE_URL) throw new Error('SUPABASE_URL is required');
+
+// Prefer JWT Signing Keys / publishable keys approach.
+// Your Edge Function can read publishable keys from env.
+const SUPABASE_PUBLISHABLE_KEYS_RAW = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS');
+if (!SUPABASE_PUBLISHABLE_KEYS_RAW)
+  throw new Error('SUPABASE_PUBLISHABLE_KEYS is required');
+
+const SUPABASE_PUBLISHABLE_KEYS = JSON.parse(SUPABASE_PUBLISHABLE_KEYS_RAW);
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -34,7 +45,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { message, client_id } = await req.json();
+    const body = await req.json();
+    const message = body?.message;
+    const client_id = body?.client_id;
+
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'Missing message' }), {
         status: 400,
@@ -42,7 +56,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    // IMPORTANT: choose which publishable key name to use.
+    // This code assumes the key named "default" exists. If it doesn't,
+    // tell me what your publishable key name is (the one you want to use).
+    const publishableKey = SUPABASE_PUBLISHABLE_KEYS['default'];
+    if (!publishableKey) {
+      throw new Error(
+        'SUPABASE_PUBLISHABLE_KEYS["default"] not found. Use the correct key name in code.'
+      );
+    }
+
+    // Use the caller's Authorization JWT so RLS applies as that user.
+    const supabase = createClient(SUPABASE_URL, publishableKey, {
       global: { headers: { Authorization: authHeader } },
     });
 
@@ -50,18 +75,36 @@ Deno.serve(async (req) => {
 
     let clientContext = '';
     if (client_id) {
-      const [{ data: client }, { data: submissions }, { data: results }] = await Promise.all([
-        supabase.from('clients').select('full_name, created_at').eq('id', client_id).single(),
-        supabase.from('client_intake_submissions').select('form_data, submitted_at').eq('client_id', client_id).order('submitted_at', { ascending: false }),
-        supabase.from('client_results').select('result_data, created_at').eq('client_id', client_id).order('created_at', { ascending: false }),
-      ]);
+      const [{ data: client }, { data: submissions }, { data: results }] =
+        await Promise.all([
+          supabase
+            .from('clients')
+            .select('full_name, created_at')
+            .eq('id', client_id)
+            .single(),
+          supabase
+            .from('client_intake_submissions')
+            .select('form_data, submitted_at')
+            .eq('client_id', client_id)
+            .order('submitted_at', { ascending: false }),
+          supabase
+            .from('client_results')
+            .select('result_data, created_at')
+            .eq('client_id', client_id)
+            .order('created_at', { ascending: false }),
+        ]);
 
       if (!client) {
-        clientContext = 'The requested client was not found, or does not belong to the requesting practitioner.';
+        clientContext =
+          'The requested client was not found, or does not belong to the requesting practitioner.';
       } else {
         clientContext =
           `CLIENT RECORD\nName: ${client.full_name}\nClient since: ${client.created_at}\n\n` +
-          `Intake submissions (${(submissions || []).length}):\n${JSON.stringify(submissions, null, 2)}\n\n` +
+          `Intake submissions (${(submissions || []).length}):\n${JSON.stringify(
+            submissions,
+            null,
+            2
+          )}\n\n` +
           `Recorded results (${(results || []).length}):\n${JSON.stringify(results, null, 2)}`;
       }
     }
@@ -79,7 +122,7 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY!,
+        'x-api-key': ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
@@ -92,14 +135,17 @@ Deno.serve(async (req) => {
 
     if (!anthropicRes.ok) {
       const errText = await anthropicRes.text();
-      return new Response(JSON.stringify({ error: 'Assistant request failed: ' + errText }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ error: 'Assistant request failed: ' + errText }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     const anthropicJson = await anthropicRes.json();
-    const reply = anthropicJson.content?.[0]?.text || '(No response text)';
+    const reply = anthropicJson?.content?.[0]?.text || '(No response text)';
 
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
