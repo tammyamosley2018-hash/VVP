@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Courses — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .manual-link-card {
+    background: var(--sand); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 20px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .manual-link-card p { margin: 0; color: var(--ink-mute); font-size: 0.88rem; }
+
+  .course-card {
+    background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px; margin-bottom: 18px;
+  }
+  .course-card .eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gold); font-weight: 700; }
+  .course-card h2 { font-size: 1.25rem; margin: 6px 0 4px; }
+  .course-card .meta { color: var(--ink-mute); font-size: 0.86rem; margin-bottom: 14px; }
+  .video-frame-wrap { position: relative; width: 100%; padding-top: 56.25%; border-radius: 8px; overflow: hidden; background: var(--navy); }
+  .video-frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video-error { color: var(--error); font-size: 0.88rem; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Courses</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Courses</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div class="manual-link-card">
+    <p>Looking for the written Volume I curriculum instead? It's in the Training Manual.</p>
+    <a href="practitioner-training-manual.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem; white-space:nowrap;">Open Training Manual</a>
+  </div>
+
+  <div id="course-list"></div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const courseList = document.getElementById('course-list');
+
+  const COURSES = [
+    {
+      videoId: 'acff6ece-702b-46ff-9a11-3bfe04d8cacc',
+      title: 'VVP Commission Intensive 2026',
+      meta: 'Recorded live · Williamsburg, VA',
+    },
+  ];
+
+  function renderCourse(course) {
+    const card = document.createElement('div');
+    card.className = 'course-card';
+    card.innerHTML =
+      '<div class="eyebrow">Recorded Training</div>' +
+      '<h2>' + course.title + '</h2>' +
+      '<div class="meta">' + course.meta + '</div>' +
+      '<div class="video-frame-wrap" id="frame-' + course.videoId + '">' +
+        '<div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:0.85rem;">Loading video…</div>' +
+      '</div>';
+    courseList.appendChild(card);
+
+    sb.functions.invoke('bunny-video-token', { body: { video_id: course.videoId } })
+      .then(({ data, error }) => {
+        const wrap = document.getElementById('frame-' + course.videoId);
+        if (error || !data || data.error || !data.embedUrl) {
+          wrap.innerHTML = '<p class="video-error" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:0 20px; text-align:center;">Could not load this video: ' +
+            ((data && data.error) || (error && error.message) || 'unknown error') + '</p>';
+          return;
+        }
+        wrap.innerHTML = '<iframe src="' + data.embedUrl + '" loading="lazy" allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;" allowfullscreen></iframe>';
+      });
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) { window.location.href = 'login.html'; return; }
+
+    sb.from('profiles').select('role').eq('id', data.session.user.id).single().then(({ data: profile, error }) => {
+      if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      checking.hidden = true;
+      shell.hidden = false;
+      COURSES.forEach(renderCourse);
+    });
+  });
+})();
+</script>
+</body>
+</html>
