@@ -15,6 +15,16 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 if (!BUNNY_TOKEN_KEY) throw new Error('BUNNY_TOKEN_KEY is required');
 if (!SUPABASE_URL) throw new Error('SUPABASE_URL is required');
 
+// apikey must be the project's own anon/publishable key -- NOT the calling
+// user's session token -- when validating that session against Auth below.
+const SUPABASE_PUBLISHABLE_KEYS_RAW = Deno.env.get('SUPABASE_PUBLISHABLE_KEYS');
+const LEGACY_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+const SUPABASE_PUBLISHABLE_KEYS = SUPABASE_PUBLISHABLE_KEYS_RAW
+  ? JSON.parse(SUPABASE_PUBLISHABLE_KEYS_RAW)
+  : null;
+const PROJECT_API_KEY = SUPABASE_PUBLISHABLE_KEYS?.['default'] || LEGACY_ANON_KEY;
+if (!PROJECT_API_KEY) throw new Error('Neither SUPABASE_PUBLISHABLE_KEYS nor SUPABASE_ANON_KEY is set');
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -45,7 +55,7 @@ Deno.serve(async (req) => {
     // Confirm this is a real logged-in user by asking Supabase Auth to
     // validate the token, rather than trusting the header blindly.
     const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { Authorization: authHeader, apikey: authHeader.replace('Bearer ', '') },
+      headers: { Authorization: authHeader, apikey: PROJECT_API_KEY },
     });
     if (!userRes.ok) {
       return new Response(JSON.stringify({ error: 'Invalid session' }), {
