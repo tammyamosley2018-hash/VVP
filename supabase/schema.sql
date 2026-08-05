@@ -500,16 +500,20 @@ alter table practitioner_certifications enable row level security;
 -- Practitioner manages their own; admins see all; a client can view
 -- certifications for whichever practitioner(s) they have a clients row
 -- under -- this is what makes the client-facing profile possible.
+drop policy if exists "certifications_select_own_admin_or_client" on practitioner_certifications;
 create policy "certifications_select_own_admin_or_client" on practitioner_certifications
   for select using (
     practitioner_id = current_practitioner_id()
     or is_admin()
     or practitioner_id in (select practitioner_id from clients where user_id = auth.uid())
   );
+drop policy if exists "certifications_insert_own" on practitioner_certifications;
 create policy "certifications_insert_own" on practitioner_certifications
   for insert with check (practitioner_id = current_practitioner_id());
+drop policy if exists "certifications_update_own" on practitioner_certifications;
 create policy "certifications_update_own" on practitioner_certifications
   for update using (practitioner_id = current_practitioner_id());
+drop policy if exists "certifications_delete_own" on practitioner_certifications;
 create policy "certifications_delete_own" on practitioner_certifications
   for delete using (practitioner_id = current_practitioner_id());
 
