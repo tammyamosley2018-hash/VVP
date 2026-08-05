@@ -464,6 +464,10 @@ create trigger on_intake_submission_notify_n8n
 
 alter table practitioners alter column user_id drop not null;
 alter table practitioners add column if not exists booking_url text;
+-- The GHL internal calendarId (distinct from booking_url, which is the
+-- public widget link) -- needed to query that practitioner's upcoming
+-- events via GHL's Calendar Events API.
+alter table practitioners add column if not exists calendar_id text;
 
 -- ============================================================
 -- PROFILE PHOTOS

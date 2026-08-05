@@ -317,9 +317,8 @@
           <div id="recent-results-list"><p class="empty-note">Loading…</p></div>
         </div>
         <div class="card-dark">
-          <div class="eyebrow-dark">Calendar &amp; Commission Training</div>
-          <p class="empty-note">Scheduling isn't wired up yet.</p>
-          <p class="soon-note">Coming in a future update.</p>
+          <div class="eyebrow-dark">Upcoming Sessions</div>
+          <div id="upcoming-events-list"><p class="empty-note">Loading…</p></div>
         </div>
       </div>
 
@@ -446,6 +445,27 @@
           '</span><a href="upload-client-results.html?client_id=' + r.client_id + '">Review</a></div>'
         ).join('');
       });
+
+    sb.functions.invoke('get-calendar-events', { body: {} }).then(({ data, error }) => {
+      const box = document.getElementById('upcoming-events-list');
+      if (error || (data && data.error)) {
+        box.innerHTML = '<p class="empty-note">Could not load your schedule right now.</p>';
+        return;
+      }
+      if (!data.calendarConfigured) {
+        box.innerHTML = '<p class="empty-note">Your calendar isn\'t linked yet.</p><p class="soon-note">Contact Tammy to get your GHL calendar connected.</p>';
+        return;
+      }
+      if (!data.events || !data.events.length) {
+        box.innerHTML = '<p class="empty-note">No sessions booked in the next 30 days.</p>';
+        return;
+      }
+      box.innerHTML = data.events.slice(0, 5).map((e) => {
+        const when = new Date(e.startTime).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        const title = e.title || (e.contact && e.contact.name) || 'Session';
+        return '<div class="report-row"><span>' + title + '</span><span style="color:var(--crystal-pale); font-size:0.8rem;">' + when + '</span></div>';
+      }).join('');
+    });
   }
 
   document.getElementById('avatar-btn').addEventListener('click', () => {
