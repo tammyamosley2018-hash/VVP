@@ -34,6 +34,11 @@
   .send-row { display: flex; gap: 10px; margin-bottom: 10px; }
   .send-row select { font: inherit; padding: 9px 10px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--parchment); }
   .send-row textarea { flex: 1; font: inherit; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--line); background: var(--parchment); resize: vertical; min-height: 44px; }
+
+  .zoom-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .zoom-card p { margin: 0; color: var(--ink-mute); font-size: 0.85rem; }
+  .zoom-result { margin-top: 10px; font-size: 0.85rem; }
+  .zoom-result a { font-weight: 600; }
 </style>
 </head>
 <body>
@@ -55,6 +60,15 @@
   </div>
 
   <div id="message" class="message error" role="alert" hidden></div>
+
+  <div class="zoom-card">
+    <div>
+      <strong>Remote Session</strong>
+      <p>Start a Zoom session and send the link to this client.</p>
+    </div>
+    <button type="button" class="btn-outline" id="zoom-btn">Start Remote Session</button>
+  </div>
+  <div id="zoom-result" class="zoom-result" hidden></div>
 
   <div class="thread-card" id="thread"><p class="msg-empty">Loading…</p></div>
 
@@ -135,6 +149,33 @@
         loadThread();
       }
     });
+  });
+
+  const zoomBtn = document.getElementById('zoom-btn');
+  const zoomResult = document.getElementById('zoom-result');
+
+  zoomBtn.addEventListener('click', () => {
+    if (!clientId) return;
+    zoomBtn.disabled = true;
+    zoomBtn.textContent = 'Starting…';
+    zoomResult.hidden = true;
+
+    sb.functions.invoke('create-zoom-meeting', { body: { client_id: clientId } })
+      .then(({ data, error }) => {
+        zoomBtn.disabled = false;
+        zoomBtn.textContent = 'Start Remote Session';
+
+        if (error) { showError('Could not start session: ' + error.message); return; }
+        if (data && data.error) { showError('Could not start session: ' + data.error); return; }
+
+        zoomResult.hidden = false;
+        zoomResult.innerHTML =
+          'Session ready — <a href="' + data.start_url + '" target="_blank" rel="noopener">open as host</a>. ' +
+          'A join link has been placed in the message box below to send to the client.';
+
+        channelSelect.value = 'sms';
+        bodyInput.value = "Hi, it's time for your session! Join here: " + data.join_url;
+      });
   });
 
   sendBtn.addEventListener('click', () => {
