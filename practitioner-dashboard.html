@@ -372,7 +372,7 @@
         return;
       }
 
-      sb.from('practitioners').select('id, full_name, avatar_url, booking_url').eq('user_id', userId).single().then(({ data: prac }) => {
+      sb.from('practitioners').select('id, full_name, avatar_url, booking_url, calendar_id').eq('user_id', userId).single().then(({ data: prac }) => {
         const displayName = (prac && prac.full_name) || profile.full_name || data.session.user.email;
         practitionerId = prac ? prac.id : null;
 
@@ -388,9 +388,14 @@
           avatarBtn.textContent = initials(displayName);
         }
 
-        if (prac && prac.booking_url) {
+        if (prac && (prac.booking_url || prac.calendar_id)) {
           const calLink = document.getElementById('calendar-nav-link');
-          calLink.href = prac.booking_url;
+          if (prac.booking_url) {
+            calLink.href = prac.booking_url;
+          } else {
+            calLink.href = '#upcoming-events-list';
+            calLink.removeAttribute('target');
+          }
           calLink.hidden = false;
           document.getElementById('calendar-nav-soon').hidden = true;
         }
