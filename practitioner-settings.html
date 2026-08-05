@@ -166,12 +166,12 @@
         return;
       }
 
-      sb.from('practitioners').select('id, full_name, avatar_url, booking_url, commission_level, commission_id, commission_next_review').eq('user_id', userId).single().then(({ data: prac }) => {
+      sb.from('practitioners').select('id, full_name, avatar_url, booking_url, commission_level, commission_id, commission_next_review').eq('user_id', userId).single().then(({ data: prac, error: pracError }) => {
         checking.hidden = true;
         shell.hidden = false;
 
         if (!prac) {
-          showMessage('No practitioner profile found for this account yet.', true);
+          showMessage(pracError ? ('Could not load your profile: ' + pracError.message) : 'No practitioner profile found for this account yet.', true);
           return;
         }
 
