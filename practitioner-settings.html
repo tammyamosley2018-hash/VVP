@@ -36,6 +36,24 @@
 
   .field .readonly-value { padding: 11px 12px; background: var(--sand); border-radius: 8px; color: var(--ink-mute); font-size: 0.95rem; }
   .field .field-hint { color: var(--ink-mute); font-size: 0.8rem; margin-top: 6px; }
+
+  .card + .card { margin-top: 20px; }
+  .card h2 { font-size: 1.05rem; margin: 0 0 4px; }
+  .card .card-hint { color: var(--ink-mute); font-size: 0.85rem; margin: 0 0 18px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .two-col { grid-template-columns: 1fr; } }
+
+  .cert-list { list-style: none; margin: 0 0 18px; padding: 0; }
+  .cert-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--parchment); border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px;
+  }
+  .cert-row .cert-name { font-weight: 600; }
+  .cert-row .cert-level { color: var(--ink-mute); font-size: 0.85rem; margin-left: 8px; }
+  .cert-row button { background: none; border: none; color: var(--error); cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+  .cert-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cert-add-row input { flex: 1; min-width: 120px; font: inherit; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--parchment); }
+  .cert-add-row button { flex: none; }
 </style>
 </head>
 <body>
@@ -83,6 +101,37 @@
 
     <button type="button" class="btn-gold" id="save-btn" style="margin-top: 8px;">Save changes</button>
   </div>
+
+  <div class="card">
+    <h2>Commission Status</h2>
+    <p class="card-hint">Shown on your clients' dashboards.</p>
+    <div class="two-col">
+      <div class="field">
+        <label for="commission-level-input">Commission level</label>
+        <input type="text" id="commission-level-input" placeholder="e.g. Level II">
+      </div>
+      <div class="field">
+        <label for="commission-id-input">Commission ID</label>
+        <input type="text" id="commission-id-input" placeholder="e.g. VVP-7H33-2026">
+      </div>
+    </div>
+    <div class="field">
+      <label for="commission-review-input">Next review date</label>
+      <input type="date" id="commission-review-input">
+    </div>
+    <button type="button" class="btn-gold" id="save-commission-btn" style="margin-top: 8px;">Save commission status</button>
+  </div>
+
+  <div class="card">
+    <h2>Certifications</h2>
+    <p class="card-hint">Shown on your clients' dashboards. Add each certification you hold.</p>
+    <ul class="cert-list" id="cert-list"></ul>
+    <div class="cert-add-row">
+      <input type="text" id="cert-name-input" placeholder="Certification name (e.g. Reiki)">
+      <input type="text" id="cert-level-input" placeholder="Level (optional, e.g. Level 2)">
+      <button type="button" class="btn-outline" id="cert-add-btn">Add</button>
+    </div>
+  </div>
 </div>
 
 <footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
@@ -117,7 +166,7 @@
         return;
       }
 
-      sb.from('practitioners').select('id, full_name, avatar_url, booking_url').eq('user_id', userId).single().then(({ data: prac }) => {
+      sb.from('practitioners').select('id, full_name, avatar_url, booking_url, commission_level, commission_id, commission_next_review').eq('user_id', userId).single().then(({ data: prac }) => {
         checking.hidden = true;
         shell.hidden = false;
 
@@ -129,6 +178,9 @@
         practitionerId = prac.id;
         document.getElementById('full-name-input').value = prac.full_name || '';
         document.getElementById('booking-url-input').value = prac.booking_url || '';
+        document.getElementById('commission-level-input').value = prac.commission_level || '';
+        document.getElementById('commission-id-input').value = prac.commission_id || '';
+        document.getElementById('commission-review-input').value = prac.commission_next_review || '';
 
         const avatarBtn = document.getElementById('avatar-btn');
         if (prac.avatar_url) {
@@ -137,6 +189,8 @@
         } else {
           avatarBtn.textContent = initials(prac.full_name);
         }
+
+        loadCertifications();
       });
     });
   });
@@ -174,6 +228,67 @@
     }).eq('id', practitionerId).then(({ error }) => {
       if (error) { showMessage('Could not save: ' + error.message, true); return; }
       showMessage('Saved.', false);
+    });
+  });
+
+  document.getElementById('save-commission-btn').addEventListener('click', () => {
+    if (!practitionerId) return;
+    const level = document.getElementById('commission-level-input').value.trim();
+    const commissionId = document.getElementById('commission-id-input').value.trim();
+    const review = document.getElementById('commission-review-input').value;
+
+    sb.from('practitioners').update({
+      commission_level: level || null,
+      commission_id: commissionId || null,
+      commission_next_review: review || null,
+    }).eq('id', practitionerId).then(({ error }) => {
+      if (error) { showMessage('Could not save: ' + error.message, true); return; }
+      showMessage('Commission status saved.', false);
+    });
+  });
+
+  function loadCertifications() {
+    sb.from('practitioner_certifications').select('id, name, level').eq('practitioner_id', practitionerId)
+      .order('created_at').then(({ data }) => {
+        const list = document.getElementById('cert-list');
+        if (!data || !data.length) {
+          list.innerHTML = '<li style="color:var(--ink-mute); font-size:0.85rem;">No certifications added yet.</li>';
+          return;
+        }
+        list.innerHTML = data.map((c) =>
+          '<li class="cert-row"><span><span class="cert-name">' + c.name + '</span>' +
+          (c.level ? '<span class="cert-level">' + c.level + '</span>' : '') + '</span>' +
+          '<button type="button" data-id="' + c.id + '">Remove</button></li>'
+        ).join('');
+      });
+  }
+
+  document.getElementById('cert-add-btn').addEventListener('click', () => {
+    if (!practitionerId) return;
+    const nameInput = document.getElementById('cert-name-input');
+    const levelInput = document.getElementById('cert-level-input');
+    const name = nameInput.value.trim();
+    const level = levelInput.value.trim();
+    if (!name) return;
+
+    sb.from('practitioner_certifications').insert({
+      practitioner_id: practitionerId,
+      name: name,
+      level: level || null,
+    }).then(({ error }) => {
+      if (error) { showMessage('Could not add certification: ' + error.message, true); return; }
+      nameInput.value = '';
+      levelInput.value = '';
+      loadCertifications();
+    });
+  });
+
+  document.getElementById('cert-list').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-id]');
+    if (!btn) return;
+    sb.from('practitioner_certifications').delete().eq('id', btn.dataset.id).then(({ error }) => {
+      if (error) { showMessage('Could not remove: ' + error.message, true); return; }
+      loadCertifications();
     });
   });
 })();

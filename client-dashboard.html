@@ -18,6 +18,20 @@
   .top-row h1 { font-size: 1.7rem; margin: 0; }
   .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 28px; }
   .card p { color: var(--ink-mute); }
+  .card + .card { margin-top: 18px; }
+
+  .prac-card { display: flex; gap: 16px; }
+  .prac-avatar {
+    width: 56px; height: 56px; border-radius: 50%; flex: none; background: var(--sand) center/cover no-repeat;
+    display: flex; align-items: center; justify-content: center; color: var(--ink-mute); font-weight: 600;
+  }
+  .prac-name { font-family: 'Fraunces', serif; font-size: 1.1rem; margin: 0; }
+  .prac-badge {
+    display: inline-block; margin-top: 4px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    background: var(--sand); color: var(--navy); padding: 3px 10px; border-radius: 999px;
+  }
+  .prac-certs { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .prac-certs li { font-size: 0.8rem; background: var(--parchment); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; }
   .spinner {
     width: 28px; height: 28px; margin: 60px auto;
     border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
@@ -46,6 +60,17 @@
   <div class="card">
     <p id="card-text" style="margin-top:0;"></p>
     <a id="results-link" href="client-results.html" class="btn-gold" style="display:none; width:auto; text-decoration:none;">View my results</a>
+  </div>
+
+  <div class="card" id="practitioner-card" style="display:none;">
+    <div class="prac-card">
+      <div class="prac-avatar" id="prac-avatar">?</div>
+      <div>
+        <p class="prac-name" id="prac-name"></p>
+        <span class="prac-badge" id="prac-badge" style="display:none;"></span>
+        <ul class="prac-certs" id="prac-certs"></ul>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -85,18 +110,58 @@
         greeting.textContent = 'Welcome, ' + (profile.full_name || data.session.user.email);
 
         sb.from('clients')
-          .select('id')
+          .select('id, practitioner_id')
           .eq('user_id', data.session.user.id)
           .then(({ data: clientRows }) => {
             if (clientRows && clientRows.length > 0) {
               cardText.textContent = "Your practitioner shares session results here once they're ready.";
               resultsLink.style.display = 'inline-block';
+              loadPractitionerProfile(clientRows[0].practitioner_id);
             } else {
               cardText.textContent = "We don't see any records linked to this account yet. If you've worked with a VVP practitioner using this email, check back soon or reach out to them directly.";
             }
           });
       });
   });
+
+  function initials(name) {
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+
+  function loadPractitionerProfile(practitionerId) {
+    if (!practitionerId) return;
+
+    sb.from('practitioners').select('full_name, avatar_url, commission_level').eq('id', practitionerId).single()
+      .then(({ data: prac }) => {
+        if (!prac) return;
+
+        document.getElementById('practitioner-card').style.display = 'block';
+        document.getElementById('prac-name').textContent = prac.full_name || 'Your Practitioner';
+
+        const avatarEl = document.getElementById('prac-avatar');
+        if (prac.avatar_url) {
+          avatarEl.style.backgroundImage = "url('" + prac.avatar_url + "')";
+          avatarEl.textContent = '';
+        } else {
+          avatarEl.textContent = initials(prac.full_name);
+        }
+
+        if (prac.commission_level) {
+          const badge = document.getElementById('prac-badge');
+          badge.textContent = 'VVP ' + prac.commission_level + ' Accredited';
+          badge.style.display = 'inline-block';
+        }
+      });
+
+    sb.from('practitioner_certifications').select('name, level').eq('practitioner_id', practitionerId)
+      .then(({ data: certs }) => {
+        if (!certs || !certs.length) return;
+        document.getElementById('prac-certs').innerHTML = certs.map((c) =>
+          '<li>' + c.name + (c.level ? ' — ' + c.level : '') + '</li>'
+        ).join('');
+      });
+  }
 
   document.getElementById('sign-out-btn').addEventListener('click', () => {
     sb.auth.signOut().then(() => { window.location.href = 'login.html'; });

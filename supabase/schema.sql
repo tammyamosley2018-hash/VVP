@@ -191,9 +191,15 @@ create policy "profiles_select_own_or_admin" on profiles
 create policy "profiles_update_own" on profiles
   for update using (id = auth.uid());
 
--- practitioners: a practitioner manages their own row; admins see all
-create policy "practitioners_select_own_or_admin" on practitioners
-  for select using (user_id = auth.uid() or is_admin());
+-- practitioners: a practitioner manages their own row; admins see all;
+-- a client can view the practitioner they belong to (needed for the
+-- client-facing practitioner profile: name, photo, commission level).
+create policy "practitioners_select_own_admin_or_client" on practitioners
+  for select using (
+    user_id = auth.uid()
+    or is_admin()
+    or id in (select practitioner_id from clients where user_id = auth.uid())
+  );
 create policy "practitioners_update_own" on practitioners
   for update using (user_id = auth.uid());
 create policy "practitioners_insert_own" on practitioners
@@ -468,6 +474,44 @@ alter table practitioners add column if not exists booking_url text;
 -- public widget link) -- needed to query that practitioner's upcoming
 -- events via GHL's Calendar Events API.
 alter table practitioners add column if not exists calendar_id text;
+
+-- ============================================================
+-- COMMISSION LEVEL & CERTIFICATIONS
+-- Client-facing: shown on a client's dashboard for their own
+-- practitioner. Self-reported by the practitioner (Tammy's explicit
+-- choice) via their own Settings page, using the same self-row RLS
+-- pattern as everything else on practitioners.
+-- ============================================================
+
+alter table practitioners add column if not exists commission_level text;
+alter table practitioners add column if not exists commission_id text;
+alter table practitioners add column if not exists commission_next_review date;
+
+create table if not exists practitioner_certifications (
+  id uuid primary key default gen_random_uuid(),
+  practitioner_id uuid not null references practitioners(id) on delete cascade,
+  name text not null,
+  level text,
+  created_at timestamptz not null default now()
+);
+
+alter table practitioner_certifications enable row level security;
+
+-- Practitioner manages their own; admins see all; a client can view
+-- certifications for whichever practitioner(s) they have a clients row
+-- under -- this is what makes the client-facing profile possible.
+create policy "certifications_select_own_admin_or_client" on practitioner_certifications
+  for select using (
+    practitioner_id = current_practitioner_id()
+    or is_admin()
+    or practitioner_id in (select practitioner_id from clients where user_id = auth.uid())
+  );
+create policy "certifications_insert_own" on practitioner_certifications
+  for insert with check (practitioner_id = current_practitioner_id());
+create policy "certifications_update_own" on practitioner_certifications
+  for update using (practitioner_id = current_practitioner_id());
+create policy "certifications_delete_own" on practitioner_certifications
+  for delete using (practitioner_id = current_practitioner_id());
 
 -- ============================================================
 -- PROFILE PHOTOS
