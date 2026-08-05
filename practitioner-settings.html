@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Settings — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 560px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px 30px; }
+
+  .avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .avatar-btn {
+    width: 64px; height: 64px; border-radius: 50%; border: 1.5px solid var(--line);
+    background: var(--sand) center/cover no-repeat; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center; color: var(--ink-mute); font-weight: 600; font-size: 1.1rem;
+  }
+  .avatar-btn:hover { border-color: var(--gold); }
+  .avatar-row .hint { color: var(--ink-mute); font-size: 0.82rem; }
+
+  .field .readonly-value { padding: 11px 12px; background: var(--sand); border-radius: 8px; color: var(--ink-mute); font-size: 0.95rem; }
+  .field .field-hint { color: var(--ink-mute); font-size: 0.8rem; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Settings</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Settings</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div id="message" class="message" role="alert" hidden></div>
+
+  <div class="card">
+    <div class="avatar-row">
+      <button type="button" class="avatar-btn" id="avatar-btn" title="Update your photo">?</button>
+      <input type="file" id="avatar-input" accept="image/*" hidden>
+      <div class="hint">Click your photo to change it.</div>
+    </div>
+
+    <div class="field">
+      <label for="full-name-input">Full name</label>
+      <input type="text" id="full-name-input">
+    </div>
+
+    <div class="field">
+      <label>Email</label>
+      <div class="readonly-value" id="email-value">—</div>
+    </div>
+
+    <div class="field">
+      <label for="booking-url-input">Your GHL booking link</label>
+      <input type="text" id="booking-url-input" placeholder="https://api.leadconnectorhq.com/widget/bookings/your-calendar">
+      <div class="field-hint">The public scheduling link for your calendar. Find it in GHL under your calendar's settings. (Leave blank if you're not sure — Tammy can add it for you.)</div>
+    </div>
+
+    <button type="button" class="btn-gold" id="save-btn" style="margin-top: 8px;">Save changes</button>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+  const message = document.getElementById('message');
+  let practitionerId = null;
+
+  function showMessage(text, isError) {
+    message.className = 'message ' + (isError ? 'error' : 'info');
+    message.textContent = text;
+    message.hidden = false;
+  }
+
+  function initials(name) {
+    if (!name) return '?';
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) { window.location.href = 'login.html'; return; }
+    const userId = data.session.user.id;
+    document.getElementById('email-value').textContent = data.session.user.email;
+
+    sb.from('profiles').select('role').eq('id', userId).single().then(({ data: profile, error }) => {
+      if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      sb.from('practitioners').select('id, full_name, avatar_url, booking_url').eq('user_id', userId).single().then(({ data: prac }) => {
+        checking.hidden = true;
+        shell.hidden = false;
+
+        if (!prac) {
+          showMessage('No practitioner profile found for this account yet.', true);
+          return;
+        }
+
+        practitionerId = prac.id;
+        document.getElementById('full-name-input').value = prac.full_name || '';
+        document.getElementById('booking-url-input').value = prac.booking_url || '';
+
+        const avatarBtn = document.getElementById('avatar-btn');
+        if (prac.avatar_url) {
+          avatarBtn.style.backgroundImage = "url('" + prac.avatar_url + "')";
+          avatarBtn.textContent = '';
+        } else {
+          avatarBtn.textContent = initials(prac.full_name);
+        }
+      });
+    });
+  });
+
+  document.getElementById('avatar-btn').addEventListener('click', () => {
+    document.getElementById('avatar-input').click();
+  });
+
+  document.getElementById('avatar-input').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file || !practitionerId) return;
+    const ext = file.name.split('.').pop();
+    const path = 'practitioner/' + practitionerId + '/avatar.' + ext;
+
+    sb.storage.from('avatars').upload(path, file, { upsert: true }).then(({ error }) => {
+      if (error) { showMessage('Photo upload failed: ' + error.message, true); return; }
+      const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
+      const url = pub.publicUrl + '?t=' + Date.now();
+      sb.from('practitioners').update({ avatar_url: url }).eq('id', practitionerId).then(() => {
+        const avatarBtn = document.getElementById('avatar-btn');
+        avatarBtn.style.backgroundImage = "url('" + url + "')";
+        avatarBtn.textContent = '';
+      });
+    });
+  });
+
+  document.getElementById('save-btn').addEventListener('click', () => {
+    if (!practitionerId) return;
+    const fullName = document.getElementById('full-name-input').value.trim();
+    const bookingUrl = document.getElementById('booking-url-input').value.trim();
+
+    sb.from('practitioners').update({
+      full_name: fullName,
+      booking_url: bookingUrl || null,
+    }).eq('id', practitionerId).then(({ error }) => {
+      if (error) { showMessage('Could not save: ' + error.message, true); return; }
+      showMessage('Saved.', false);
+    });
+  });
+})();
+</script>
+</body>
+</html>
