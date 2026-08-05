@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Analytics — Vibrational Virtue™ Practitioner</title>
+<link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vvp-base.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="assets/js/supabase-config.js"></script>
+<style>
+  .shell { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  .top-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 26px; flex-wrap: wrap; gap: 12px; }
+  .top-row h1 { font-size: 1.7rem; margin: 0; }
+  .spinner {
+    width: 28px; height: 28px; margin: 60px auto;
+    border: 3px solid var(--line); border-top-color: var(--gold); border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .stat-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; }
+  .stat-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-mute); font-weight: 700; }
+  .stat-card .num { font-family: 'Fraunces', serif; font-size: 1.7rem; color: var(--ink); margin-top: 2px; }
+  @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+
+  .chart-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 20px; }
+  .chart-card h2 { font-size: 1.05rem; margin: 0 0 2px; }
+  .chart-card .sub { color: var(--ink-mute); font-size: 0.82rem; margin-bottom: 16px; }
+  .chart-empty { color: var(--ink-mute); font-size: 0.88rem; padding: 30px 0; text-align: center; }
+
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 8px; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; position: relative; }
+  .bar-col .bar {
+    width: 100%; max-width: 34px; background: var(--gold); border-radius: 4px 4px 0 0;
+    min-height: 2px; transition: background 0.15s;
+  }
+  .bar-col:hover .bar { background: var(--gold-bright); }
+  .bar-col .bar-count {
+    position: absolute; top: -20px; font-size: 0.72rem; font-weight: 600; color: var(--ink);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .bar-col:hover .bar-count { opacity: 1; }
+  .bar-col .bar-label { font-size: 0.68rem; color: var(--ink-mute); margin-top: 6px; white-space: nowrap; }
+
+  .status-bar-wrap { display: flex; height: 30px; border-radius: 6px; overflow: hidden; gap: 2px; margin-bottom: 14px; }
+  .status-seg { height: 100%; min-width: 2px; }
+  .status-seg.completed { background: var(--gold); }
+  .status-seg.pending { background: var(--crystal); }
+  .status-legend { display: flex; gap: 20px; font-size: 0.85rem; }
+  .status-legend .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .status-legend .swatch.completed { background: var(--gold); }
+  .status-legend .swatch.pending { background: var(--crystal); }
+
+  table.chart-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 4px; }
+  table.chart-table th, table.chart-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  details.table-toggle { margin-top: 12px; }
+  details.table-toggle summary { cursor: pointer; font-size: 0.8rem; color: var(--crystal); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <img class="mark" src="assets/images/vvp-mark-navy.png" alt="Vibrational Virtue Practitioner crystal mark">
+  <div class="word">
+    <span class="mark-word">Vibrational Virtue<sup>™</sup> Practitioner</span>
+    <span class="subline">Analytics</span>
+  </div>
+</header>
+
+<div id="checking" class="spinner"></div>
+
+<div id="shell" class="shell" hidden>
+  <div class="top-row">
+    <h1>Analytics</h1>
+    <a href="practitioner-dashboard.html" class="btn-outline" style="text-decoration:none; padding:8px 16px; font-size:0.85rem;">Back to dashboard</a>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="label">Total Clients</div><div class="num" id="stat-total-clients">—</div></div>
+    <div class="stat-card"><div class="label">Total Intakes</div><div class="num" id="stat-total-intakes">—</div></div>
+    <div class="stat-card"><div class="label">Results Recorded</div><div class="num" id="stat-total-results">—</div></div>
+    <div class="stat-card"><div class="label">Messages Sent</div><div class="num" id="stat-total-messages">—</div></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>New Clients</h2>
+    <div class="sub">Per week, last 10 weeks</div>
+    <div id="clients-chart"><p class="chart-empty">Loading…</p></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Intake Submissions</h2>
+    <div class="sub">Per week, last 10 weeks</div>
+    <div id="intakes-chart"><p class="chart-empty">Loading…</p></div>
+  </div>
+
+  <div class="chart-card">
+    <h2>Results Completion</h2>
+    <div class="sub">Clients who submitted an intake — reviewed vs. still pending</div>
+    <div id="status-chart"><p class="chart-empty">Loading…</p></div>
+  </div>
+</div>
+
+<footer class="site">Clarity + Alignment + Harmony + Coherence · Copyright Vibrational Virtue Practitioner 2026</footer>
+
+<script>
+(function () {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const checking = document.getElementById('checking');
+  const shell = document.getElementById('shell');
+
+  function startOfWeek(d) {
+    const date = new Date(d);
+    const day = date.getDay(); // 0 = Sun
+    const diff = (day === 0 ? 6 : day - 1); // week starts Monday
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - diff);
+    return date;
+  }
+
+  function weekLabel(d) {
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function lastNWeeks(n) {
+    const weeks = [];
+    const cursor = startOfWeek(new Date());
+    for (let i = n - 1; i >= 0; i--) {
+      const w = new Date(cursor);
+      w.setDate(w.getDate() - i * 7);
+      weeks.push(w);
+    }
+    return weeks;
+  }
+
+  function renderBarChart(containerId, rows, dateField) {
+    const container = document.getElementById(containerId);
+    const weeks = lastNWeeks(10);
+    const counts = weeks.map((w) => {
+      const weekEnd = new Date(w);
+      weekEnd.setDate(weekEnd.getDate() + 7);
+      return (rows || []).filter((r) => {
+        const t = new Date(r[dateField]);
+        return t >= w && t < weekEnd;
+      }).length;
+    });
+
+    if (!rows || !rows.length) {
+      container.innerHTML = '<p class="chart-empty">No data yet.</p>';
+      return;
+    }
+
+    const max = Math.max(...counts, 1);
+    const bars = weeks.map((w, i) =>
+      '<div class="bar-col" title="' + counts[i] + ' — week of ' + weekLabel(w) + '">' +
+        '<span class="bar-count">' + counts[i] + '</span>' +
+        '<div class="bar" style="height:' + Math.max((counts[i] / max) * 100, counts[i] > 0 ? 4 : 1) + '%"></div>' +
+        '<span class="bar-label">' + weekLabel(w) + '</span>' +
+      '</div>'
+    ).join('');
+
+    const tableRows = weeks.map((w, i) => '<tr><td>Week of ' + weekLabel(w) + '</td><td>' + counts[i] + '</td></tr>').join('');
+
+    container.innerHTML =
+      '<div class="bar-chart">' + bars + '</div>' +
+      '<details class="table-toggle"><summary>View as table</summary>' +
+        '<table class="chart-table"><tr><th>Week</th><th>Count</th></tr>' + tableRows + '</table>' +
+      '</details>';
+  }
+
+  function loadAnalytics(pid) {
+    Promise.all([
+      sb.from('clients').select('id, created_at').eq('practitioner_id', pid),
+      sb.from('client_intake_submissions').select('id, client_id, submitted_at').eq('practitioner_id', pid),
+      sb.from('client_results').select('id, client_id, created_at').eq('practitioner_id', pid),
+      sb.from('client_messages').select('id').eq('practitioner_id', pid).eq('direction', 'outbound'),
+    ]).then(([clientsRes, submissionsRes, resultsRes, messagesRes]) => {
+      const clients = clientsRes.data || [];
+      const submissions = submissionsRes.data || [];
+      const results = resultsRes.data || [];
+      const messages = messagesRes.data || [];
+
+      document.getElementById('stat-total-clients').textContent = clients.length;
+      document.getElementById('stat-total-intakes').textContent = submissions.length;
+      document.getElementById('stat-total-results').textContent = results.length;
+      document.getElementById('stat-total-messages').textContent = messages.length;
+
+      renderBarChart('clients-chart', clients, 'created_at');
+      renderBarChart('intakes-chart', submissions, 'submitted_at');
+
+      const withResults = new Set(results.map((r) => r.client_id));
+      const submittedClientIds = new Set(submissions.map((s) => s.client_id).filter(Boolean));
+      const completedCount = [...submittedClientIds].filter((id) => withResults.has(id)).length;
+      const pendingCount = submittedClientIds.size - completedCount;
+
+      const statusContainer = document.getElementById('status-chart');
+      if (submittedClientIds.size === 0) {
+        statusContainer.innerHTML = '<p class="chart-empty">No intake submissions yet.</p>';
+      } else {
+        const completedPct = (completedCount / submittedClientIds.size) * 100;
+        const pendingPct = 100 - completedPct;
+        statusContainer.innerHTML =
+          '<div class="status-bar-wrap">' +
+            (completedCount > 0 ? '<div class="status-seg completed" style="width:' + completedPct + '%"></div>' : '') +
+            (pendingCount > 0 ? '<div class="status-seg pending" style="width:' + pendingPct + '%"></div>' : '') +
+          '</div>' +
+          '<div class="status-legend">' +
+            '<span><span class="swatch completed"></span>Completed — ' + completedCount + '</span>' +
+            '<span><span class="swatch pending"></span>Pending — ' + pendingCount + '</span>' +
+          '</div>';
+      }
+    });
+  }
+
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) { window.location.href = 'login.html'; return; }
+    const userId = data.session.user.id;
+
+    sb.from('profiles').select('role').eq('id', userId).single().then(({ data: profile, error }) => {
+      if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      sb.from('practitioners').select('id').eq('user_id', userId).single().then(({ data: prac }) => {
+        checking.hidden = true;
+        shell.hidden = false;
+        if (prac) loadAnalytics(prac.id);
+      });
+    });
+  });
+})();
+</script>
+</body>
+</html>
