@@ -51,7 +51,7 @@ function initVvpDashboardShell() {
               if (prac.booking_url) {
                 calLink.href = prac.booking_url;
               } else {
-                calLink.href = '#upcoming-events-list';
+                calLink.href = 'practitioner-dashboard.html#upcoming-events-list';
                 calLink.removeAttribute('target');
               }
               calLink.hidden = false;
