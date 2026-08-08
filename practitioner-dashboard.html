@@ -13,7 +13,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/js/supabase-config.js"></script>
 <style>
-  body { background: var(--navy); color: var(--parchment); }
+  body {
+    background:
+      linear-gradient(180deg, rgba(11,27,51,0.35) 0%, rgba(11,27,51,0.75) 55%, var(--navy) 100%),
+      var(--navy) url('assets/images/vvp-dashboard-bg.png') no-repeat center top;
+    background-size: cover, cover;
+    background-attachment: fixed, fixed;
+    color: var(--parchment);
+  }
   .spinner {
     width: 28px; height: 28px; margin: 60px auto;
     border: 3px solid var(--navy-soft);
