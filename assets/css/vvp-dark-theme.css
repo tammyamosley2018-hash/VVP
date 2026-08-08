@@ -13,7 +13,7 @@
   --vvp-blue: #42B7F5;        /* electric blue accent */
   --vvp-ivory: #F2EEE6;       /* primary text */
   --vvp-muted: #AAB6C7;       /* secondary muted text */
-  --vvp-radius: 11px;
+  --vvp-radius: 12px;
 }
 
 /* ---------- Page background ---------- */
@@ -59,7 +59,7 @@ body.vvp-dark-shell {
 .dash-nav .soon .pill { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--vvp-panel); color: #6B7893; padding: 2px 7px; border-radius: 999px; }
 
 .credential-card {
-  margin-top: auto; background: var(--vvp-panel); border: 1px solid var(--vvp-panel-line); border-radius: 10px; padding: 13px 14px;
+  margin-top: auto; background: rgba(7, 19, 33, 0.88); border: 1px solid #B9822B; border-radius: 12px; padding: 13px 14px;
 }
 .credential-card .eyebrow {
   font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
@@ -186,7 +186,7 @@ body.vvp-dark-shell {
 
 /* ---------- Cards & labels ---------- */
 .card-dark {
-  background: var(--vvp-panel); border: 1px solid var(--vvp-panel-line); border-radius: var(--vvp-radius);
+  background: rgba(7, 19, 33, 0.88); border: 1px solid #B9822B; border-radius: var(--vvp-radius);
   padding: 18px 20px;
 }
 .eyebrow-dark {
@@ -214,11 +214,11 @@ body.vvp-dark-shell {
 
 /* ---------- Client initial avatars ---------- */
 .client-initial-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: #101B2A; border: 1px solid var(--vvp-gold-border);
+  width: 31px; height: 31px; border-radius: 50%;
+  background: #101B2A; border: 1.5px solid #D9A441;
   display: flex; align-items: center; justify-content: center; flex: none;
-  font-family: 'Montserrat', sans-serif; font-size: 10px; font-weight: 600; color: var(--vvp-ivory);
-  box-shadow: 0 0 6px rgba(185, 130, 43, 0.18);
+  font-family: 'Montserrat', sans-serif; font-size: 9.5px; font-weight: 600; color: #E9E2D5;
+  box-shadow: 0 0 10px rgba(217, 164, 65, 0.5), 0 0 3px rgba(217, 164, 65, 0.6);
 }
 
 .recent-clients-list { list-style: none; margin: 8px 0 0; padding: 0; }
@@ -237,7 +237,7 @@ body.vvp-dark-shell {
 .quickactions a {
   display: flex; flex-direction: column; align-items: center; gap: 7px; text-decoration: none;
   color: var(--vvp-ivory); font-family: 'Montserrat', sans-serif; font-size: 0.78rem; font-weight: 600; text-align: center;
-  padding: 14px 8px; background: var(--vvp-panel); border: 1px solid var(--vvp-panel-line); border-radius: var(--vvp-radius);
+  padding: 14px 8px; background: rgba(7, 19, 33, 0.88); border: 1px solid #B9822B; border-radius: var(--vvp-radius);
 }
 .quickactions a:hover { border-color: var(--vvp-gold); }
 .quickactions svg { width: 22px; height: 22px; color: var(--vvp-gold); }
