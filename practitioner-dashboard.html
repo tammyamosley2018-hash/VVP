@@ -54,7 +54,10 @@
   .credential-card {
     margin-top: auto; background: var(--navy-soft); border: 1px solid #26365C; border-radius: 10px; padding: 14px 14px;
   }
-  .credential-card .eyebrow { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: #8B96B5; }
+  .credential-card .eyebrow {
+    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
+    color: #D9A441; text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
+  }
   .credential-card .level { display: flex; align-items: center; gap: 6px; color: var(--gold-bright); font-weight: 700; font-size: 0.92rem; margin-top: 4px; }
   .credential-card .cred-id { font-size: 0.7rem; color: #7B87A3; margin-top: 2px; }
   .credential-card .cert-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
@@ -95,6 +98,11 @@
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 18px; border-bottom: 1px solid var(--navy-soft);
     font-family: 'Fraunces', serif; color: var(--gold-bright); font-size: 1.05rem;
+  }
+  .senna-header .senna-header-title { display: flex; align-items: center; gap: 10px; }
+  .senna-header .senna-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover;
+    border: 1.5px solid var(--gold); background: var(--navy-soft);
   }
   .senna-header button { background: none; border: none; color: var(--crystal-pale); font-size: 1.1rem; cursor: pointer; }
   .senna-client-select { padding: 10px 14px; border-bottom: 1px solid var(--navy-soft); }
@@ -209,7 +217,11 @@
   @media (max-width: 900px) { .lists-row { grid-template-columns: 1fr; } }
   .report-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--navy-soft); font-size: 0.86rem; }
   .report-row:last-child { border-bottom: none; }
-  .report-row a { color: var(--gold-bright); font-size: 0.8rem; text-decoration: none; font-weight: 600; }
+  .report-row a {
+    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
+    color: #D9A441; text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
+    text-decoration: none;
+  }
   .empty-note { color: var(--crystal-pale); font-size: 0.85rem; }
   .soon-note { color: #5C6A85; font-size: 0.82rem; font-style: italic; margin-top: 6px; }
 </style>
@@ -391,7 +403,7 @@
 
 <div class="senna-panel" id="senna-panel" hidden>
   <div class="senna-header">
-    <span>✨ Senna AI Assistant</span>
+    <span class="senna-header-title"><img class="senna-avatar" src="assets/images/vvp-senna-avatar.png" alt="">Senna AI Assistant</span>
     <button type="button" id="senna-close-btn" aria-label="Close">&times;</button>
   </div>
   <div class="senna-client-select">
