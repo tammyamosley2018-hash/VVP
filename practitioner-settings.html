@@ -83,6 +83,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5Z"/></svg>
         Courses
       </a>
+      <a href="practitioner-coven-gatherings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 3.5a8 8 0 1 0 6 6 6.5 6.5 0 0 1-6-6Z"/><path d="M19 3l.6 1.4L21 5l-1.4.6L19 7l-.6-1.4L17 5l1.4-.6Z"/></svg>
+        Coven Gatherings
+      </a>
       <a id="calendar-nav-link" href="#" target="_blank" rel="noopener" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         Calendar
@@ -159,7 +163,10 @@
 
           <div class="field-dark">
             <label for="booking-url-input">Your GHL booking link</label>
-            <input type="text" id="booking-url-input" placeholder="https://api.leadconnectorhq.com/widget/bookings/your-calendar">
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="booking-url-input" placeholder="https://api.leadconnectorhq.com/widget/bookings/your-calendar" style="flex:1;">
+              <button type="button" class="btn-outline-dark" id="copy-booking-url-btn" style="flex:none; padding:0 16px;">Copy</button>
+            </div>
             <div class="field-hint">The public scheduling link for your calendar. Find it in GHL under your calendar's settings. (Leave blank if you're not sure — Tammy can add it for you.)</div>
           </div>
 
@@ -286,6 +293,17 @@
           topbarAvatarBtn.textContent = '';
         }
       });
+    });
+  });
+
+  document.getElementById('copy-booking-url-btn').addEventListener('click', () => {
+    const input = document.getElementById('booking-url-input');
+    const btn = document.getElementById('copy-booking-url-btn');
+    if (!input.value.trim()) return;
+    navigator.clipboard.writeText(input.value.trim()).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = original; }, 1500);
     });
   });
 

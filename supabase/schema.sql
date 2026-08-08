@@ -577,3 +577,41 @@ create policy "avatars_practitioner_update_client" on storage.objects
         and practitioner_id = current_practitioner_id()
     )
   );
+
+-- ============================================================
+-- COVEN GATHERINGS
+-- Community event board (classes, seminars, retreats). Any
+-- practitioner/admin can view; a practitioner can add gatherings
+-- and manage the ones they created; admins can manage all.
+-- ============================================================
+
+create table if not exists coven_gatherings (
+  id uuid primary key default gen_random_uuid(),
+  created_by uuid references practitioners(id) on delete set null,
+  title text not null,
+  event_type text,
+  description text,
+  location text,
+  starts_at timestamptz not null,
+  ends_at timestamptz,
+  registration_url text,
+  created_at timestamptz not null default now()
+);
+
+alter table coven_gatherings enable row level security;
+
+drop policy if exists "gatherings_select_practitioners" on coven_gatherings;
+create policy "gatherings_select_practitioners" on coven_gatherings
+  for select using (is_admin() or current_practitioner_id() is not null);
+
+drop policy if exists "gatherings_insert_own" on coven_gatherings;
+create policy "gatherings_insert_own" on coven_gatherings
+  for insert with check (created_by = current_practitioner_id());
+
+drop policy if exists "gatherings_update_own_or_admin" on coven_gatherings;
+create policy "gatherings_update_own_or_admin" on coven_gatherings
+  for update using (created_by = current_practitioner_id() or is_admin());
+
+drop policy if exists "gatherings_delete_own_or_admin" on coven_gatherings;
+create policy "gatherings_delete_own_or_admin" on coven_gatherings
+  for delete using (created_by = current_practitioner_id() or is_admin());

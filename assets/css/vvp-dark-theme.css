@@ -260,6 +260,11 @@ body.vvp-dark-shell {
   color: var(--vvp-gold); text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
   text-decoration: none;
 }
+.view-all-link {
+  font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
+  color: var(--vvp-gold); text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
+  text-decoration: none; flex: none;
+}
 
 .empty-note { color: var(--vvp-muted); font-size: 0.85rem; }
 .soon-note { color: #5C6A85; font-size: 0.82rem; font-style: italic; margin-top: 6px; }

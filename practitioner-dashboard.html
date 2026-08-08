@@ -42,6 +42,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5Z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5Z"/></svg>
         Courses
       </a>
+      <a href="practitioner-coven-gatherings.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14.5 3.5a8 8 0 1 0 6 6 6.5 6.5 0 0 1-6-6Z"/><path d="M19 3l.6 1.4L21 5l-1.4.6L19 7l-.6-1.4L17 5l1.4-.6Z"/></svg>
+        Coven Gatherings
+      </a>
       <a id="calendar-nav-link" href="#" target="_blank" rel="noopener" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         Calendar
@@ -186,6 +190,14 @@
         </div>
       </div>
 
+      <div class="card-dark" style="margin-top:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div class="eyebrow-dark" style="margin-bottom:0;">Upcoming Gatherings</div>
+          <a href="practitioner-coven-gatherings.html" class="view-all-link">View all</a>
+        </div>
+        <div id="upcoming-gatherings-list"><p class="empty-note">Loading…</p></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -286,6 +298,18 @@
         return '<div class="report-row"><span class="row-main"><span class="schedule-dot ' + dotColor + '"></span>' + title + '</span><span style="color:var(--vvp-muted); font-size:0.8rem;">' + when + '</span></div>';
       }).join('');
     });
+
+    sb.from('coven_gatherings').select('id, title, starts_at')
+      .gte('starts_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .order('starts_at', { ascending: true }).limit(3)
+      .then(({ data }) => {
+        const box = document.getElementById('upcoming-gatherings-list');
+        if (!data || !data.length) { box.innerHTML = '<p class="empty-note">No gatherings scheduled yet.</p>'; return; }
+        box.innerHTML = data.map((g) => {
+          const when = new Date(g.starts_at).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+          return '<div class="report-row"><span class="row-main"><span class="schedule-dot gold"></span>' + g.title + '</span><span style="color:var(--vvp-muted); font-size:0.8rem;">' + when + '</span></div>';
+        }).join('');
+      });
   }
 })();
 </script>

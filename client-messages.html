@@ -70,6 +70,14 @@
   </div>
   <div id="zoom-result" class="zoom-result" hidden></div>
 
+  <div class="zoom-card">
+    <div>
+      <strong>Booking Link</strong>
+      <p id="booking-link-hint">Send your calendar link so this client can schedule their next session.</p>
+    </div>
+    <button type="button" class="btn-outline" id="booking-link-btn">Send Booking Link</button>
+  </div>
+
   <div class="thread-card" id="thread"><p class="msg-empty">Loading…</p></div>
 
   <div class="send-card">
@@ -131,10 +139,15 @@
     showError('No client selected.');
   }
 
+  let practitionerBookingUrl = null;
+  const bookingLinkBtn = document.getElementById('booking-link-btn');
+  const bookingLinkHint = document.getElementById('booking-link-hint');
+
   sb.auth.getSession().then(({ data }) => {
     if (!data.session) { window.location.href = 'login.html'; return; }
+    const userId = data.session.user.id;
 
-    sb.from('profiles').select('role').eq('id', data.session.user.id).single().then(({ data: profile, error }) => {
+    sb.from('profiles').select('role').eq('id', userId).single().then(({ data: profile, error }) => {
       if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
         window.location.href = 'login.html';
         return;
@@ -148,7 +161,22 @@
         });
         loadThread();
       }
+
+      sb.from('practitioners').select('booking_url').eq('user_id', userId).single().then(({ data: prac }) => {
+        practitionerBookingUrl = (prac && prac.booking_url) || null;
+        if (!practitionerBookingUrl) {
+          bookingLinkHint.innerHTML = 'Add your booking link in <a href="practitioner-settings.html">Settings</a> first.';
+          bookingLinkBtn.disabled = true;
+        }
+      });
     });
+  });
+
+  bookingLinkBtn.addEventListener('click', () => {
+    if (!clientId || !practitionerBookingUrl) return;
+    channelSelect.value = 'sms';
+    bodyInput.value = "Hi! Here's my booking link so you can schedule your next session: " + practitionerBookingUrl;
+    bodyInput.focus();
   });
 
   const zoomBtn = document.getElementById('zoom-btn');
