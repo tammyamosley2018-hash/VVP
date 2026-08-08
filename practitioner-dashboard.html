@@ -8,227 +8,16 @@
 <link rel="icon" type="image/png" href="assets/images/vvp-mark-navy.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Cinzel:wght@500&family=Montserrat:wght@500&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=Cinzel:wght@500&family=Montserrat:wght@500;600&family=Cormorant+Garamond:wght@600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/vvp-base.css">
+<link rel="stylesheet" href="assets/css/vvp-dark-theme.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="assets/js/supabase-config.js"></script>
-<style>
-  body {
-    background:
-      linear-gradient(180deg, rgba(11,27,51,0.35) 0%, rgba(11,27,51,0.75) 55%, var(--navy) 100%),
-      var(--navy) url('assets/images/vvp-dashboard-bg.png') no-repeat center top;
-    background-size: cover, cover;
-    background-attachment: fixed, fixed;
-    color: var(--parchment);
-  }
-  .spinner {
-    width: 28px; height: 28px; margin: 60px auto;
-    border: 3px solid var(--navy-soft);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin 0.9s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .dash-layout { display: flex; min-height: 100vh; }
-
-  .dash-sidebar {
-    width: 220px; flex: none; background: #06091B; border-right: 1px solid var(--navy-soft);
-    padding: 22px 16px; display: flex; flex-direction: column; gap: 26px;
-  }
-  .dash-sidebar .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; }
-  .dash-sidebar .brand img { width: 34px; height: 34px; border-radius: 50%; }
-  .dash-sidebar .brand .word { font-family: 'Fraunces', serif; font-size: 0.92rem; line-height: 1.2; }
-  .dash-sidebar .brand .word small { display: block; font-size: 0.62rem; color: var(--gold-bright); text-transform: uppercase; letter-spacing: 0.08em; }
-  .dash-nav { display: flex; flex-direction: column; gap: 2px; }
-  .dash-nav a, .dash-nav .soon {
-    display: flex; align-items: center; gap: 11px; padding: 10px 10px; border-radius: 8px;
-    text-decoration: none; color: var(--crystal-pale); font-size: 0.9rem; font-weight: 500;
-  }
-  .dash-nav a:hover { background: var(--navy-soft); color: #fff; }
-  .dash-nav a.active { background: var(--navy-soft); color: var(--gold-bright); }
-  .dash-nav svg { width: 18px; height: 18px; flex: none; }
-  .dash-nav .soon { color: #5C6A85; cursor: default; justify-content: space-between; }
-  .dash-nav .soon .pill { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--navy-soft); color: #7B87A3; padding: 2px 7px; border-radius: 999px; }
-
-  .credential-card {
-    margin-top: auto; background: var(--navy-soft); border: 1px solid #26365C; border-radius: 10px; padding: 14px 14px;
-  }
-  .credential-card .eyebrow {
-    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
-    color: #D9A441; text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
-  }
-  .credential-card .level { display: flex; align-items: center; gap: 6px; color: var(--gold-bright); font-weight: 700; font-size: 0.92rem; margin-top: 4px; }
-  .credential-card .cred-id { font-size: 0.7rem; color: #7B87A3; margin-top: 2px; }
-  .credential-card .cert-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
-  .credential-card .cert-tags span { font-size: 0.66rem; background: #06091B; color: var(--crystal-pale); padding: 3px 8px; border-radius: 999px; }
-
-  .dash-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-
-  .dash-topbar {
-    display: flex; align-items: center; justify-content: flex-end; gap: 16px;
-    padding: 16px 28px; border-bottom: 1px solid var(--navy-soft);
-  }
-  .profile-chip { display: flex; align-items: center; gap: 10px; }
-  .profile-chip .avatar-btn {
-    width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--gold);
-    background: var(--navy-soft) center/cover no-repeat; cursor: pointer; padding: 0;
-    display: flex; align-items: center; justify-content: center; color: var(--gold-bright); font-weight: 600; font-size: 0.9rem;
-  }
-  .profile-chip .who { line-height: 1.25; }
-  .profile-chip .who .name { font-weight: 600; font-size: 0.88rem; }
-  .profile-chip .who .role { font-size: 0.72rem; color: var(--crystal-pale); text-transform: uppercase; letter-spacing: 0.05em; }
-  .signout-link { background: none; border: none; color: var(--crystal-pale); font: inherit; font-size: 0.82rem; cursor: pointer; text-decoration: underline; }
-
-  .senna-toggle {
-    display: flex; align-items: center; gap: 8px; font: inherit; font-weight: 600; font-size: 0.85rem;
-    background: var(--navy-soft); color: var(--gold-bright); border: 1px solid #26365C;
-    padding: 8px 16px; border-radius: 999px; cursor: pointer;
-  }
-  .senna-toggle:hover { border-color: var(--gold); }
-  .senna-toggle svg { width: 16px; height: 16px; }
-
-  .senna-panel {
-    position: fixed; top: 0; right: 0; height: 100vh; width: 360px; max-width: 92vw;
-    background: #0A1226; border-left: 1px solid var(--navy-soft);
-    z-index: 40; display: flex; flex-direction: column;
-    box-shadow: -20px 0 40px rgba(0,0,0,0.35);
-  }
-  .senna-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 18px; border-bottom: 1px solid var(--navy-soft);
-    font-family: 'Fraunces', serif; color: var(--gold-bright); font-size: 1.05rem;
-  }
-  .senna-header .senna-header-title { display: flex; align-items: center; gap: 10px; }
-  .senna-header .senna-avatar {
-    width: 32px; height: 32px; border-radius: 50%; flex: none; object-fit: cover;
-    border: 1.5px solid var(--gold); background: var(--navy-soft);
-  }
-  .senna-header button { background: none; border: none; color: var(--crystal-pale); font-size: 1.1rem; cursor: pointer; }
-  .senna-client-select { padding: 10px 14px; border-bottom: 1px solid var(--navy-soft); }
-  .senna-client-select select {
-    width: 100%; font: inherit; font-size: 0.82rem; padding: 7px 9px; border-radius: 8px;
-    background: var(--navy-soft); color: var(--parchment); border: 1px solid #26365C;
-  }
-  .senna-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-  .senna-msg { font-size: 0.86rem; line-height: 1.5; padding: 10px 12px; border-radius: 10px; max-width: 90%; white-space: pre-wrap; }
-  .senna-msg.user { align-self: flex-end; background: var(--gold); color: var(--navy); }
-  .senna-msg.assistant { align-self: flex-start; background: var(--navy-soft); color: var(--parchment); }
-  .senna-msg.error { align-self: flex-start; background: #3A1E1E; color: #F3B4B4; }
-  .senna-empty { color: var(--crystal-pale); font-size: 0.82rem; text-align: center; margin-top: 30px; }
-  .senna-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--navy-soft); }
-  .senna-form input {
-    flex: 1; font: inherit; font-size: 0.85rem; padding: 9px 12px; border-radius: 8px;
-    background: var(--navy-soft); color: var(--parchment); border: 1px solid #26365C;
-  }
-  .senna-form button {
-    font: inherit; font-weight: 600; font-size: 0.85rem; background: var(--gold); color: var(--navy);
-    border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer;
-  }
-  .senna-form button:disabled { opacity: 0.6; cursor: default; }
-
-  .dash-content { padding: 26px 28px 70px; max-width: 1180px; position: relative; z-index: 1; }
-
-  .hero-banner {
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; gap: 22px;
-    padding: 30px 32px; margin-bottom: 18px;
-  }
-  .hero-banner .glow {
-    position: absolute; left: -60px; top: 50%; transform: translateY(-50%);
-    width: 260px; height: 260px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(201,162,39,0.35) 0%, rgba(59,110,165,0.18) 45%, transparent 72%);
-    filter: blur(6px); pointer-events: none;
-  }
-  .hero-banner .video-frame {
-    position: relative; z-index: 1; flex: none;
-    width: 260px; height: 202px; overflow: hidden; border-radius: 14px;
-    filter: drop-shadow(0 0 22px rgba(231,199,103,0.35));
-  }
-  .hero-banner .video-frame video {
-    display: block; width: 260px; height: 311px; object-fit: cover; object-position: top center;
-  }
-  .hero-banner .video-frame::after {
-    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 40px;
-    background: linear-gradient(to bottom, rgba(14,24,48,0) 0%, rgba(14,24,48,0.95) 100%);
-    pointer-events: none;
-  }
-  .hero-banner .titles { position: relative; z-index: 1; }
-  .hero-banner .titles h2 {
-    margin: 0; font-family: 'Cinzel', serif; font-size: 44px; font-weight: 500;
-    color: #D9A441; letter-spacing: 0.5px; line-height: 1.08;
-  }
-  .hero-banner .titles .subtitle {
-    margin-top: 6px; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 500;
-    color: #4EB7F5; letter-spacing: 6px; text-transform: uppercase;
-  }
-
-  .flower-of-life {
-    position: fixed; left: -90px; bottom: -90px; width: 320px; height: 320px;
-    opacity: 0.07; pointer-events: none; z-index: 0;
-  }
-
-  .card-dark {
-    background: #0E1830; border: 1px solid var(--navy-soft); border-radius: var(--radius);
-    padding: 20px 22px;
-  }
-  .welcome-card { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-  .welcome-card .welcome-text { min-width: 0; }
-  .welcome-card .welcome-title {
-    font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600;
-    color: #F2EEE6; line-height: 1.15; margin: 0;
-  }
-  .welcome-card .welcome-image {
-    flex: none; width: 150px; height: 168px; border-radius: 12px; overflow: hidden;
-    background: #06091B; filter: drop-shadow(0 0 16px rgba(78,183,245,0.25));
-  }
-  .welcome-card .welcome-image img { display: block; width: 100%; height: 100%; object-fit: cover; }
-  .eyebrow-dark {
-    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
-    color: #D9A441; text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
-    margin-bottom: 6px;
-  }
-
-  .hero-row { display: grid; grid-template-columns: 1.1fr 1fr; gap: 18px; margin-bottom: 18px; }
-  .hero-row h1 { font-size: 1.5rem; margin: 4px 0 8px; }
-  .hero-row p { color: var(--crystal-pale); font-size: 0.9rem; margin: 0; }
-
-  .recent-clients-list { list-style: none; margin: 10px 0 0; padding: 0; }
-  .recent-clients-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--navy-soft); font-size: 0.86rem; }
-  .recent-clients-list li:last-child { border-bottom: none; }
-  .recent-clients-list .badge-new { font-size: 0.65rem; background: var(--gold); color: var(--navy); padding: 2px 8px; border-radius: 999px; font-weight: 700; }
-
-  .quickactions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 18px; }
-  .quickactions a {
-    display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none;
-    color: var(--parchment); font-size: 0.8rem; font-weight: 600; text-align: center;
-    padding: 16px 8px; background: #0E1830; border: 1px solid var(--navy-soft); border-radius: var(--radius);
-  }
-  .quickactions a:hover { border-color: var(--gold); }
-  .quickactions svg { width: 24px; height: 24px; color: var(--gold-bright); }
-  @media (max-width: 900px) { .quickactions { grid-template-columns: repeat(2, 1fr); } .hero-row { grid-template-columns: 1fr; } }
-
-  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
-  .stat-card .num { font-family: 'Fraunces', serif; font-size: 2rem; color: #fff; }
-  .stat-card .label-sub { font-size: 0.72rem; color: var(--crystal-pale); margin-top: 2px; }
-  @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
-
-  .lists-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  @media (max-width: 900px) { .lists-row { grid-template-columns: 1fr; } }
-  .report-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--navy-soft); font-size: 0.86rem; }
-  .report-row:last-child { border-bottom: none; }
-  .report-row a {
-    font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 600;
-    color: #D9A441; text-transform: uppercase; letter-spacing: 1.4px; line-height: 1.2;
-    text-decoration: none;
-  }
-  .empty-note { color: var(--crystal-pale); font-size: 0.85rem; }
-  .soon-note { color: #5C6A85; font-size: 0.82rem; font-style: italic; margin-top: 6px; }
-</style>
+<script src="assets/js/vvp-dashboard-shell.js"></script>
 </head>
-<body>
+<body class="vvp-dark-shell">
 
-<div id="checking" class="spinner"></div>
+<div id="checking" class="vvp-spinner"></div>
 
 <div id="shell" hidden class="dash-layout">
   <aside class="dash-sidebar">
@@ -303,7 +92,7 @@
 
     <div class="dash-content">
 
-      <svg class="flower-of-life" viewBox="0 0 200 200" fill="none" stroke="var(--gold)" stroke-width="0.6">
+      <svg class="flower-of-life" viewBox="0 0 200 200" fill="none" stroke="var(--vvp-gold)" stroke-width="0.6">
         <circle cx="100" cy="100" r="30"/>
         <circle cx="100" cy="65" r="30"/><circle cx="100" cy="135" r="30"/>
         <circle cx="70" cy="82.5" r="30"/><circle cx="70" cy="117.5" r="30"/>
@@ -422,83 +211,17 @@
 
 <script>
 (function () {
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const checking = document.getElementById('checking');
-  const shell = document.getElementById('shell');
-  let practitionerId = null;
-
-  function initials(name) {
-    if (!name) return '?';
-    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0].toUpperCase()).join('');
-  }
+  initVvpDashboardShell().then(({ sb, practitionerId, displayName }) => {
+    document.getElementById('greeting').textContent = 'Welcome back, ' + displayName.split(' ')[0] + '.';
+    if (practitionerId) loadDashboardData(sb, practitionerId);
+  }).catch(() => {});
 
   function relativeBadge(dateStr) {
     const days = (Date.now() - new Date(dateStr).getTime()) / 86400000;
     return days <= 7 ? '<span class="badge-new">New</span>' : '';
   }
 
-  sb.auth.getSession().then(({ data }) => {
-    if (!data.session) { window.location.href = 'login.html'; return; }
-    const userId = data.session.user.id;
-
-    sb.from('profiles').select('role, full_name').eq('id', userId).single().then(({ data: profile, error }) => {
-      if (error || !profile || (profile.role !== 'practitioner' && profile.role !== 'admin')) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      sb.from('practitioners').select('id, full_name, avatar_url, booking_url, calendar_id, commission_level, commission_id').eq('user_id', userId).single().then(({ data: prac }) => {
-        const displayName = (prac && prac.full_name) || profile.full_name || data.session.user.email;
-        practitionerId = prac ? prac.id : null;
-
-        document.getElementById('greeting').textContent = 'Welcome back, ' + displayName.split(' ')[0] + '.';
-        document.getElementById('profile-name').textContent = displayName;
-        document.getElementById('profile-role').textContent = profile.role === 'admin' ? 'Admin' : 'Practitioner';
-
-        const avatarBtn = document.getElementById('avatar-btn');
-        if (prac && prac.avatar_url) {
-          avatarBtn.style.backgroundImage = "url('" + prac.avatar_url + "')";
-          avatarBtn.textContent = '';
-        } else {
-          avatarBtn.textContent = initials(displayName);
-        }
-
-        if (prac && (prac.booking_url || prac.calendar_id)) {
-          const calLink = document.getElementById('calendar-nav-link');
-          if (prac.booking_url) {
-            calLink.href = prac.booking_url;
-          } else {
-            calLink.href = '#upcoming-events-list';
-            calLink.removeAttribute('target');
-          }
-          calLink.hidden = false;
-          document.getElementById('calendar-nav-soon').hidden = true;
-        }
-
-        if (prac && prac.commission_level) {
-          document.getElementById('credential-card').hidden = false;
-          document.getElementById('credential-level').innerHTML =
-            '<svg viewBox="0 0 24 24" fill="var(--gold-bright)" style="width:14px;height:14px;"><path d="M12 2l2.9 6.3L22 9l-5 4.9L18.2 21 12 17.6 5.8 21 7 13.9 2 9l7.1-.7Z"/></svg> ' +
-            prac.commission_level + ' Accredited';
-          document.getElementById('credential-id').textContent = prac.commission_id ? ('ID: ' + prac.commission_id) : '';
-
-          sb.from('practitioner_certifications').select('name, level').eq('practitioner_id', prac.id).then(({ data: certs }) => {
-            if (!certs || !certs.length) return;
-            document.getElementById('credential-certs').innerHTML = certs.map((c) =>
-              '<span>' + c.name + (c.level ? ' — ' + c.level : '') + '</span>'
-            ).join('');
-          });
-        }
-
-        checking.hidden = true;
-        shell.hidden = false;
-
-        if (practitionerId) loadDashboardData(practitionerId);
-      });
-    });
-  });
-
-  function loadDashboardData(pid) {
+  function loadDashboardData(sb, pid) {
     const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
     sb.from('clients').select('id, full_name, email, created_at', { count: 'exact' })
@@ -508,7 +231,8 @@
         const list = document.getElementById('recent-clients-list');
         if (!data || !data.length) { list.innerHTML = '<li class="empty-note">No clients yet.</li>'; return; }
         list.innerHTML = data.map(c =>
-          '<li><span>' + (c.full_name || c.email) + '</span>' + relativeBadge(c.created_at) + '</li>'
+          '<li><span class="client-row-main"><span class="client-initial-avatar">' + vvpInitials(c.full_name || c.email) + '</span><span>' +
+          (c.full_name || c.email) + '</span></span>' + relativeBadge(c.created_at) + '</li>'
         ).join('');
       });
 
@@ -555,106 +279,14 @@
         box.innerHTML = '<p class="empty-note">No sessions booked in the next 30 days.</p>';
         return;
       }
-      box.innerHTML = data.events.slice(0, 5).map((e) => {
+      box.innerHTML = data.events.slice(0, 5).map((e, i) => {
         const when = new Date(e.startTime).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
         const title = e.title || (e.contact && e.contact.name) || 'Session';
-        return '<div class="report-row"><span>' + title + '</span><span style="color:var(--crystal-pale); font-size:0.8rem;">' + when + '</span></div>';
+        const dotColor = i % 2 === 0 ? 'gold' : 'blue';
+        return '<div class="report-row"><span class="row-main"><span class="schedule-dot ' + dotColor + '"></span>' + title + '</span><span style="color:var(--vvp-muted); font-size:0.8rem;">' + when + '</span></div>';
       }).join('');
     });
   }
-
-  document.getElementById('avatar-btn').addEventListener('click', () => {
-    document.getElementById('avatar-input').click();
-  });
-
-  document.getElementById('avatar-input').addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file || !practitionerId) return;
-    const ext = file.name.split('.').pop();
-    const path = 'practitioner/' + practitionerId + '/avatar.' + ext;
-
-    sb.storage.from('avatars').upload(path, file, { upsert: true }).then(({ error }) => {
-      if (error) { alert('Photo upload failed: ' + error.message); return; }
-      const { data: pub } = sb.storage.from('avatars').getPublicUrl(path);
-      const url = pub.publicUrl + '?t=' + Date.now();
-      sb.from('practitioners').update({ avatar_url: url }).eq('id', practitionerId).then(() => {
-        const avatarBtn = document.getElementById('avatar-btn');
-        avatarBtn.style.backgroundImage = "url('" + url + "')";
-        avatarBtn.textContent = '';
-      });
-    });
-  });
-
-  document.getElementById('sign-out-btn').addEventListener('click', () => {
-    sb.auth.signOut().then(() => { window.location.href = 'login.html'; });
-  });
-
-  const sennaPanel = document.getElementById('senna-panel');
-  const sennaMessages = document.getElementById('senna-messages');
-  const sennaForm = document.getElementById('senna-form');
-  const sennaInput = document.getElementById('senna-input');
-  const sennaSendBtn = document.getElementById('senna-send-btn');
-  const sennaClientSelect = document.getElementById('senna-client-select');
-  let sennaClientsLoaded = false;
-
-  document.getElementById('senna-toggle-btn').addEventListener('click', () => {
-    sennaPanel.hidden = false;
-    if (!sennaClientsLoaded && practitionerId) {
-      sennaClientsLoaded = true;
-      sb.from('clients').select('id, full_name').eq('practitioner_id', practitionerId)
-        .order('full_name').then(({ data }) => {
-          (data || []).forEach((c) => {
-            const opt = document.createElement('option');
-            opt.value = c.id;
-            opt.textContent = c.full_name;
-            sennaClientSelect.appendChild(opt);
-          });
-        });
-    }
-  });
-
-  document.getElementById('senna-close-btn').addEventListener('click', () => {
-    sennaPanel.hidden = true;
-  });
-
-  function addSennaMessage(text, cls) {
-    const emptyNote = sennaMessages.querySelector('.senna-empty');
-    if (emptyNote) emptyNote.remove();
-    const bubble = document.createElement('div');
-    bubble.className = 'senna-msg ' + cls;
-    bubble.textContent = text;
-    sennaMessages.appendChild(bubble);
-    sennaMessages.scrollTop = sennaMessages.scrollHeight;
-  }
-
-  sennaForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const text = sennaInput.value.trim();
-    if (!text) return;
-
-    addSennaMessage(text, 'user');
-    sennaInput.value = '';
-    sennaInput.disabled = true;
-    sennaSendBtn.disabled = true;
-
-    const clientId = sennaClientSelect.value || undefined;
-
-    sb.functions.invoke('senna-assistant', { body: { message: text, client_id: clientId } })
-      .then(({ data, error }) => {
-        sennaInput.disabled = false;
-        sennaSendBtn.disabled = false;
-        sennaInput.focus();
-        if (error) {
-          addSennaMessage("Senna couldn't respond: " + error.message, 'error');
-          return;
-        }
-        if (data && data.error) {
-          addSennaMessage("Senna couldn't respond: " + data.error, 'error');
-          return;
-        }
-        addSennaMessage((data && data.reply) || '(No response)', 'assistant');
-      });
-  });
 })();
 </script>
 </body>
